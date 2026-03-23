@@ -374,7 +374,13 @@ const onGetMatchInfo = async () => {
     getMatchInfo(fid as string).then((res: IMatchInfo) => {
       matchStore.match = res
       addHistoryMatch(res)
-      onAnalysisMatch()
+      if (res.is_redis) {
+        closeToast()
+        isLoading.value = false
+        operateMatchData()
+      } else {
+        onAnalysisMatch()
+      }
     }).catch(err => {
       if (err.code === 403) {
         localStorage.removeItem("code")
@@ -394,253 +400,7 @@ const onAnalysisMatch = () => {
   })
   analysisMatch(matchStore.match).then((res2: IMatchInfo) => {
     matchStore.match = res2
-    let home_score = 0
-    let visit_score = 0
-//    matchStore.match.infer_data?.forEach(item => {
-//      home_score += parseInt(item.home_field_score!.split(":")[0]!) + parseInt(item.visit_field_score!.split(":")[0])
-//      visit_score += parseInt(item.home_field_score!.split(":")[1]!) + parseInt(item.visit_field_score!.split(":")[1])
-//    })
-    matchStore.match.infer_data?.forEach(item => {
-      const [homeHome, homeAway] = (item.home_field_score || '0:0').split(':').map(Number)
-      const [visitHome, visitAway] = (item.visit_field_score || '0:0').split(':').map(Number)
-      home_score += (homeHome || 0) + (visitHome || 0)
-      visit_score += (homeAway || 0) + (visitAway || 0)
-    })
-    if (visit_score > 0) {
-      const fixedRatio = Math.round(home_score / visit_score * 100) / 100;
-      matchStore.match.infer_score = (fixedRatio === Math.floor(fixedRatio) ? Math.floor(fixedRatio) : fixedRatio) + ":1"
-    } else {
-      matchStore.match.infer_score = `${home_score}:${visit_score}`
-    }
-    showEuropeAll.value = (matchStore.match?.europe_win_all ?? 0) + (matchStore.match?.europe_even_all ?? 0) + (matchStore.match?.europe_lose_all ?? 0) > 0
-    if (showEuropeAll.value) {
-      const option1 = _.cloneDeep(defineChartOption(1, "欧赔全网"))
-      const total1 = (res2.europe_win_all ?? 0) + (res2.europe_even_all ?? 0) + (res2.europe_lose_all ?? 0)
-      if (total1 > 0) {
-        // @ts-ignore
-        option1.series[0].data = [(res2.europe_win_all ?? 0) / total1]
-        // @ts-ignore
-        option1.series[1].data = [(res2.europe_even_all ?? 0) / total1]
-        // @ts-ignore
-        option1.series[2].data = [(res2.europe_lose_all ?? 0) / total1]
-        option1.legend = {
-          top: '10%',
-          formatter: (name: string) => {
-            if (name === "胜") {
-              return `胜：${ getDecimalPoint((res2.europe_win_all ?? 0) / total1 * 100) }%`
-            } else if (name === "平") {
-              return `平：${ getDecimalPoint((res2.europe_even_all ?? 0) / total1 * 100) }%`
-            } else {
-              return `负：${ getDecimalPoint((res2.europe_lose_all ?? 0) / total1 * 100) }%`
-            }
-          }
-        }
-        chart_europe_all.setOption(option1)
-      }
-      showEuropeLeague.value = (matchStore.match?.europe_win_league ?? 0) + (matchStore.match?.europe_even_league ?? 0) + (matchStore.match?.europe_lose_league ?? 0) > 0
-      if (showEuropeLeague.value) {
-        const option11: echarts.EChartsOption = _.cloneDeep(defineChartOption(1, "欧赔本联赛"))
-        const total11 = (res2.europe_win_league ?? 0) + (res2.europe_even_league ?? 0) + (res2.europe_lose_league ?? 0)
-        if (total11 > 0) {
-          // @ts-ignore
-          option11.series[0].data = [(res2.europe_win_league ?? 0) / total11]
-          // @ts-ignore
-          option11.series[1].data = [(res2.europe_even_league ?? 0) / total11]
-          // @ts-ignore
-          option11.series[2].data = [(res2.europe_lose_league ?? 0) / total11]
-          option11.legend = {
-            top: '10%',
-            formatter: (name: string) => {
-              if (name === "胜") {
-                return `胜：${ getDecimalPoint((res2.europe_win_league ?? 0) / total11 * 100) }%`
-              } else if (name === "平") {
-                return `平：${ getDecimalPoint((res2.europe_even_league ?? 0) / total11 * 100) }%`
-              } else {
-                return `负：${ getDecimalPoint((res2.europe_lose_league ?? 0) / total11 * 100) }%`
-              }
-            }
-          }
-          chart_europe_league.setOption(option11)
-        }
-      }
-      if ((matchStore.match.europe_score_list?.length || 0) > 0) {
-        europe_score_list.value = []
-        matchStore.match.europe_score_list?.some((item: any[]) => {
-          europe_score_list.value.push(`<span style="color: #895b8a">${ item[0] }</span>：${ item[1] }场(${ (item[1] / total1 * 100).toFixed(2) }%)`)
-          if (europe_score_list.value?.length >= 3) {
-            return true
-          }
-        })
-      }
-    } else {
-      showEuropeLeague.value = false
-    }
-    showAsiaAll.value = (matchStore.match.asia_win_all ?? 0) + (matchStore.match.asia_run_all ?? 0) + (matchStore.match.asia_lose_all ?? 0) > 0
-    if (showAsiaAll.value) {
-      const option2 = _.cloneDeep(defineChartOption(2, "亚盘全网")) as echarts.EChartsOption
-      const total2 = (res2.asia_win_all ?? 0) + (res2.asia_run_all ?? 0) + (res2.asia_lose_all ?? 0)
-      if (total2 > 0) {
-        // @ts-ignore
-        option2.series[0].data = [(res2.asia_win_all ?? 0) / total2]
-        // @ts-ignore
-        option2.series[1].data = [(res2.asia_run_all ?? 0) / total2]
-        // @ts-ignore
-        option2.series[2].data = [(res2.asia_lose_all ?? 0) / total2]
-        option2.legend = {
-          top: '10%',
-          formatter: (name: string) => {
-            if (name === "赢") {
-              return `赢：${ getDecimalPoint((res2.asia_win_all ?? 0) / total2 * 100) }%`
-            } else if (name === "走") {
-              return `走：${ getDecimalPoint((res2.asia_run_all ?? 0) / total2 * 100) }%`
-            } else {
-              return `输：${ getDecimalPoint((res2.asia_lose_all ?? 0) / total2 * 100) }%`
-            }
-          }
-        }
-        chart_asia_all.setOption(option2)
-      }
-      showAsiaLeague.value = (matchStore.match.asia_win_league ?? 0) + (matchStore.match.asia_run_league ?? 0) + (matchStore.match.asia_lose_league ?? 0) > 0
-      if (showAsiaLeague.value) {
-        const option22 = _.cloneDeep(defineChartOption(2, "亚盘本联赛"))
-        const total122 = (res2.asia_win_league ?? 0) + (res2.asia_run_league ?? 0) + (res2.asia_lose_league ?? 0)
-        if (total122 > 0) {
-          // @ts-ignore
-          option22.series[0].data = [(res2.asia_win_league ?? 0) / total122]
-          // @ts-ignore
-          option22.series[1].data = [(res2.asia_run_league ?? 0) / total122]
-          // @ts-ignore
-          option22.series[2].data = [(res2.asia_lose_league ?? 0) / total122]
-          option22.legend = {
-            top: '10%',
-            formatter: (name: string) => {
-              if (name === "赢") {
-                return `赢：${ getDecimalPoint((res2.asia_win_league ?? 0) / total122 * 100) }%`
-              } else if (name === "走") {
-                return `走：${ getDecimalPoint((res2.asia_run_league ?? 0) / total122 * 100) }%`
-              } else {
-                return `输：${ getDecimalPoint((res2.asia_lose_league ?? 0) / total122 * 100) }%`
-              }
-            }
-          }
-          chart_asia_league.setOption(option22)
-        }
-      }
-      if ((matchStore.match.asia_score_list?.length || 0) > 0) {
-        asia_score_list.value = []
-        matchStore.match.asia_score_list?.some((item: any[]) => {
-          asia_score_list.value.push(`<span style="color: #895b8a">${ item[0] }</span>：${ item[1] }场(${ (item[1] / total2 * 100).toFixed(2) }%)`)
-          if (asia_score_list.value.length >= 3) {
-            return true
-          }
-        })
-      }
-    } else {
-      showAsiaLeague.value = false
-    }
-    showTeamStatus.value = (matchStore.match.home_status?.length || 0) > 0 && (matchStore.match.visit_status?.length || 0) > 0
-    if (showTeamStatus.value) {
-      const option4 :echarts.EChartsOption = _.cloneDeep(defineTeamStatusChartOption()) as echarts.EChartsOption
-      // @ts-ignore
-      option4.xAxis.data = matchStore.match.home_status?.map((_, index: number) => (index + 1))
-      // @ts-ignore
-      option4.series[0].data = matchStore.match.home_status
-      // @ts-ignore
-      option4.series[1].data = matchStore.match.visit_status
-      chart_team_status.setOption(option4)
-    }
-    showSizeAll.value = (matchStore.match.size_big_all ?? 0) + (matchStore.match.size_run_all ?? 0) + (matchStore.match.size_small_all ?? 0) > 0
-    if (showSizeAll.value) {
-      const option3 = _.cloneDeep(defineChartOption(3, "大小球全网"))
-      const total3 = (res2.size_big_all ?? 0) + (res2.size_run_all ?? 0) + (res2.size_small_all ?? 0)
-      // @ts-ignore
-      option3.series[0].data = [(res2.size_big_all ?? 0) / total3]
-      // @ts-ignore
-      option3.series[1].data = [(res2.size_run_all ?? 0) / total3]
-      // @ts-ignore
-      option3.series[2].data = [(res2.size_small_all ?? 0) / total3]
-      option3.legend = {
-        top: '10%',
-        formatter: (name: string) => {
-          if (name === "大") {
-            return `大：${ getDecimalPoint((res2.size_big_all ?? 0) / total3 * 100) }%`
-          } else if (name === "走") {
-            return `走：${ getDecimalPoint((res2.size_run_all ?? 0) / total3 * 100) }%`
-          } else {
-            return `小：${ getDecimalPoint((res2.size_small_all ?? 0) / total3 * 100) }%`
-          }
-        }
-      }
-      chart_size_all.setOption(option3)
-      showSizeLeague.value = (matchStore.match.size_big_league ?? 0) + (matchStore.match.size_run_league ?? 0) + (matchStore.match.size_small_league ?? 0) > 0
-      if (showSizeLeague.value) {
-        const option33 = _.cloneDeep(defineChartOption(3, "大小球本联赛"))
-        const total33 = (res2.size_big_league ?? 0) + (res2.size_run_league ?? 0) + (res2.size_small_league ?? 0)
-        if (total33 > 0) {
-          // @ts-ignore
-          option33.series[0].data = [(res2.size_big_league ?? 0) / total33]
-          // @ts-ignore
-          option33.series[1].data = [(res2.size_run_league ?? 0) / total33]
-          // @ts-ignore
-          option33.series[2].data = [(res2.size_small_league ?? 0) / total33]
-          option33.legend = {
-            top: '10%',
-            formatter: (name: string) => {
-              if (name === "大") {
-                return `大：${ getDecimalPoint((res2.size_big_league ?? 0) / total33 * 100) }%`
-              } else if (name === "走") {
-                return `走：${ getDecimalPoint((res2.size_run_league ?? 0) / total33 * 100) }%`
-              } else {
-                return `小：${ getDecimalPoint((res2.size_small_league ?? 0) / total33 * 100) }%`
-              }
-            }
-          }
-          chart_size_league.setOption(option33)
-        }
-      }
-      if ((matchStore.match.size_score_list?.length || 0) > 0) {
-        size_score_list.value = []
-        matchStore.match.size_score_list?.some((item: any[]) => {
-          size_score_list.value.push(`<span style="color: #895b8a">${ item[0] }</span>：${ item[1] }场(${ (item[1] / total3 * 100).toFixed(2) }%)`)
-          if (size_score_list.value.length >= 3) {
-            return true
-          }
-        })
-        goal_number_list.value = []
-        matchStore.match.goal_number_list?.some((item: any[]) => {
-          goal_number_list.value.push(`<span style="color: #895b8a">${ item[0] }球</span>：${ item[1] }场(${ (item[1] / total3 * 100).toFixed(2) }%)`)
-          if (goal_number_list.value.length >= 3) {
-            return true
-          }
-        })
-        half_goal_number_list.value = []
-        matchStore.match.half_goal_number_list?.some((item: any[]) => {
-          half_goal_number_list.value.push(`<span style="color: #895b8a">${ item[0] }球</span>：${ item[1] }场(${ (item[1] / total3 * 100).toFixed(2) }%)`)
-          if (half_goal_number_list.value.length >= 3) {
-            return true
-          }
-        })
-      }
-    } else {
-      showSizeLeague.value = false
-    }
-    showTotalGoal.value = (matchStore.match.home_total_goal?.length || 0) > 0 && (matchStore.match.visit_total_goal?.length || 0) > 0
-    if (showTotalGoal.value) {
-      const option5 :echarts.EChartsOption = _.cloneDeep(defineTotalGoalChartOption()) as echarts.EChartsOption
-      // @ts-ignore
-      option5.xAxis.data = matchStore.match.home_total_goal.map((_, index: number) => (index + 1))
-      // @ts-ignore
-      option5.series[0].data = matchStore.match.home_total_goal.map(item => {
-        return item === 0 ? 0.2 : item
-      })
-      // @ts-ignore
-      option5.series[1].data = matchStore.match.visit_total_goal.map(item => {
-        return item === 0 ? 0.2 : item
-      })
-      // @ts-ignore
-      option5.series[2].data = Array.from({ length: matchStore.match.home_total_goal!.length }, () => matchStore.match.instant_size_most)
-      chart_total_goal.setOption(option5)
-    }
+    operateMatchData()
     closeToast()
   }).catch(() => {
     closeToast()
@@ -668,6 +428,251 @@ const onAnalysisMatch = () => {
   }).finally(() => {
     isLoading.value = false
   })
+}
+const operateMatchData = () => {
+  let home_score = 0
+  let visit_score = 0
+  matchStore.match.infer_data?.forEach(item => {
+    const [homeHome, homeAway] = (item.home_field_score || '0:0').split(':').map(Number)
+    const [visitHome, visitAway] = (item.visit_field_score || '0:0').split(':').map(Number)
+    home_score += (homeHome || 0) + (visitHome || 0)
+    visit_score += (homeAway || 0) + (visitAway || 0)
+  })
+  if (visit_score > 0) {
+    const fixedRatio = Math.round(home_score / visit_score * 100) / 100;
+    matchStore.match.infer_score = (fixedRatio === Math.floor(fixedRatio) ? Math.floor(fixedRatio) : fixedRatio) + ":1"
+  } else {
+    matchStore.match.infer_score = `${home_score}:${visit_score}`
+  }
+  showEuropeAll.value = (matchStore.match?.europe_win_all ?? 0) + (matchStore.match?.europe_even_all ?? 0) + (matchStore.match?.europe_lose_all ?? 0) > 0
+  if (showEuropeAll.value) {
+    const option1 = _.cloneDeep(defineChartOption(1, "欧赔全网"))
+    const total1 = (matchStore.match.europe_win_all ?? 0) + (matchStore.match.europe_even_all ?? 0) + (matchStore.match.europe_lose_all ?? 0)
+    if (total1 > 0) {
+      // @ts-ignore
+      option1.series[0].data = [(matchStore.match.europe_win_all ?? 0) / total1]
+      // @ts-ignore
+      option1.series[1].data = [(matchStore.match.europe_even_all ?? 0) / total1]
+      // @ts-ignore
+      option1.series[2].data = [(matchStore.match.europe_lose_all ?? 0) / total1]
+      option1.legend = {
+        top: '10%',
+        formatter: (name: string) => {
+          if (name === "胜") {
+            return `胜：${ getDecimalPoint((matchStore.match.europe_win_all ?? 0) / total1 * 100) }%`
+          } else if (name === "平") {
+            return `平：${ getDecimalPoint((matchStore.match.europe_even_all ?? 0) / total1 * 100) }%`
+          } else {
+            return `负：${ getDecimalPoint((matchStore.match.europe_lose_all ?? 0) / total1 * 100) }%`
+          }
+        }
+      }
+      chart_europe_all.setOption(option1)
+    }
+    showEuropeLeague.value = (matchStore.match?.europe_win_league ?? 0) + (matchStore.match?.europe_even_league ?? 0) + (matchStore.match?.europe_lose_league ?? 0) > 0
+    if (showEuropeLeague.value) {
+      const option11: echarts.EChartsOption = _.cloneDeep(defineChartOption(1, "欧赔本联赛"))
+      const total11 = (matchStore.match.europe_win_league ?? 0) + (matchStore.match.europe_even_league ?? 0) + (matchStore.match.europe_lose_league ?? 0)
+      if (total11 > 0) {
+        // @ts-ignore
+        option11.series[0].data = [(matchStore.match.europe_win_league ?? 0) / total11]
+        // @ts-ignore
+        option11.series[1].data = [(matchStore.match.europe_even_league ?? 0) / total11]
+        // @ts-ignore
+        option11.series[2].data = [(matchStore.match.europe_lose_league ?? 0) / total11]
+        option11.legend = {
+          top: '10%',
+          formatter: (name: string) => {
+            if (name === "胜") {
+              return `胜：${ getDecimalPoint((matchStore.match.europe_win_league ?? 0) / total11 * 100) }%`
+            } else if (name === "平") {
+              return `平：${ getDecimalPoint((matchStore.match.europe_even_league ?? 0) / total11 * 100) }%`
+            } else {
+              return `负：${ getDecimalPoint((matchStore.match.europe_lose_league ?? 0) / total11 * 100) }%`
+            }
+          }
+        }
+        chart_europe_league.setOption(option11)
+      }
+    }
+    if ((matchStore.match.europe_score_list?.length || 0) > 0) {
+      europe_score_list.value = []
+      matchStore.match.europe_score_list?.some((item: any[]) => {
+        europe_score_list.value.push(`<span style="color: #895b8a">${ item[0] }</span>：${ item[1] }场(${ (item[1] / total1 * 100).toFixed(2) }%)`)
+        if (europe_score_list.value?.length >= 3) {
+          return true
+        }
+      })
+    }
+  } else {
+    showEuropeLeague.value = false
+  }
+  showAsiaAll.value = (matchStore.match.asia_win_all ?? 0) + (matchStore.match.asia_run_all ?? 0) + (matchStore.match.asia_lose_all ?? 0) > 0
+  if (showAsiaAll.value) {
+    const option2 = _.cloneDeep(defineChartOption(2, "亚盘全网")) as echarts.EChartsOption
+    const total2 = (matchStore.match.asia_win_all ?? 0) + (matchStore.match.asia_run_all ?? 0) + (matchStore.match.asia_lose_all ?? 0)
+    if (total2 > 0) {
+      // @ts-ignore
+      option2.series[0].data = [(matchStore.match.asia_win_all ?? 0) / total2]
+      // @ts-ignore
+      option2.series[1].data = [(matchStore.match.asia_run_all ?? 0) / total2]
+      // @ts-ignore
+      option2.series[2].data = [(matchStore.match.asia_lose_all ?? 0) / total2]
+      option2.legend = {
+        top: '10%',
+        formatter: (name: string) => {
+          if (name === "赢") {
+            return `赢：${ getDecimalPoint((matchStore.match.asia_win_all ?? 0) / total2 * 100) }%`
+          } else if (name === "走") {
+            return `走：${ getDecimalPoint((matchStore.match.asia_run_all ?? 0) / total2 * 100) }%`
+          } else {
+            return `输：${ getDecimalPoint((matchStore.match.asia_lose_all ?? 0) / total2 * 100) }%`
+          }
+        }
+      }
+      chart_asia_all.setOption(option2)
+    }
+    showAsiaLeague.value = (matchStore.match.asia_win_league ?? 0) + (matchStore.match.asia_run_league ?? 0) + (matchStore.match.asia_lose_league ?? 0) > 0
+    if (showAsiaLeague.value) {
+      const option22 = _.cloneDeep(defineChartOption(2, "亚盘本联赛"))
+      const total122 = (matchStore.match.asia_win_league ?? 0) + (matchStore.match.asia_run_league ?? 0) + (matchStore.match.asia_lose_league ?? 0)
+      if (total122 > 0) {
+        // @ts-ignore
+        option22.series[0].data = [(matchStore.match.asia_win_league ?? 0) / total122]
+        // @ts-ignore
+        option22.series[1].data = [(matchStore.match.asia_run_league ?? 0) / total122]
+        // @ts-ignore
+        option22.series[2].data = [(matchStore.match.asia_lose_league ?? 0) / total122]
+        option22.legend = {
+          top: '10%',
+          formatter: (name: string) => {
+            if (name === "赢") {
+              return `赢：${ getDecimalPoint((matchStore.match.asia_win_league ?? 0) / total122 * 100) }%`
+            } else if (name === "走") {
+              return `走：${ getDecimalPoint((matchStore.match.asia_run_league ?? 0) / total122 * 100) }%`
+            } else {
+              return `输：${ getDecimalPoint((matchStore.match.asia_lose_league ?? 0) / total122 * 100) }%`
+            }
+          }
+        }
+        chart_asia_league.setOption(option22)
+      }
+    }
+    if ((matchStore.match.asia_score_list?.length || 0) > 0) {
+      asia_score_list.value = []
+      matchStore.match.asia_score_list?.some((item: any[]) => {
+        asia_score_list.value.push(`<span style="color: #895b8a">${ item[0] }</span>：${ item[1] }场(${ (item[1] / total2 * 100).toFixed(2) }%)`)
+        if (asia_score_list.value.length >= 3) {
+          return true
+        }
+      })
+    }
+  } else {
+    showAsiaLeague.value = false
+  }
+  showTeamStatus.value = (matchStore.match.home_status?.length || 0) > 0 && (matchStore.match.visit_status?.length || 0) > 0
+  if (showTeamStatus.value) {
+    const option4 :echarts.EChartsOption = _.cloneDeep(defineTeamStatusChartOption()) as echarts.EChartsOption
+    // @ts-ignore
+    option4.xAxis.data = matchStore.match.home_status?.map((_, index: number) => (index + 1))
+    // @ts-ignore
+    option4.series[0].data = matchStore.match.home_status
+    // @ts-ignore
+    option4.series[1].data = matchStore.match.visit_status
+    chart_team_status.setOption(option4)
+  }
+  showSizeAll.value = (matchStore.match.size_big_all ?? 0) + (matchStore.match.size_run_all ?? 0) + (matchStore.match.size_small_all ?? 0) > 0
+  if (showSizeAll.value) {
+    const option3 = _.cloneDeep(defineChartOption(3, "大小球全网"))
+    const total3 = (matchStore.match.size_big_all ?? 0) + (matchStore.match.size_run_all ?? 0) + (matchStore.match.size_small_all ?? 0)
+    // @ts-ignore
+    option3.series[0].data = [(matchStore.match.size_big_all ?? 0) / total3]
+    // @ts-ignore
+    option3.series[1].data = [(matchStore.match.size_run_all ?? 0) / total3]
+    // @ts-ignore
+    option3.series[2].data = [(matchStore.match.size_small_all ?? 0) / total3]
+    option3.legend = {
+      top: '10%',
+      formatter: (name: string) => {
+        if (name === "大") {
+          return `大：${ getDecimalPoint((matchStore.match.size_big_all ?? 0) / total3 * 100) }%`
+        } else if (name === "走") {
+          return `走：${ getDecimalPoint((matchStore.match.size_run_all ?? 0) / total3 * 100) }%`
+        } else {
+          return `小：${ getDecimalPoint((matchStore.match.size_small_all ?? 0) / total3 * 100) }%`
+        }
+      }
+    }
+    chart_size_all.setOption(option3)
+    showSizeLeague.value = (matchStore.match.size_big_league ?? 0) + (matchStore.match.size_run_league ?? 0) + (matchStore.match.size_small_league ?? 0) > 0
+    if (showSizeLeague.value) {
+      const option33 = _.cloneDeep(defineChartOption(3, "大小球本联赛"))
+      const total33 = (matchStore.match.size_big_league ?? 0) + (matchStore.match.size_run_league ?? 0) + (matchStore.match.size_small_league ?? 0)
+      if (total33 > 0) {
+        // @ts-ignore
+        option33.series[0].data = [(matchStore.match.size_big_league ?? 0) / total33]
+        // @ts-ignore
+        option33.series[1].data = [(matchStore.match.size_run_league ?? 0) / total33]
+        // @ts-ignore
+        option33.series[2].data = [(matchStore.match.size_small_league ?? 0) / total33]
+        option33.legend = {
+          top: '10%',
+          formatter: (name: string) => {
+            if (name === "大") {
+              return `大：${ getDecimalPoint((matchStore.match.size_big_league ?? 0) / total33 * 100) }%`
+            } else if (name === "走") {
+              return `走：${ getDecimalPoint((matchStore.match.size_run_league ?? 0) / total33 * 100) }%`
+            } else {
+              return `小：${ getDecimalPoint((matchStore.match.size_small_league ?? 0) / total33 * 100) }%`
+            }
+          }
+        }
+        chart_size_league.setOption(option33)
+      }
+    }
+    if ((matchStore.match.size_score_list?.length || 0) > 0) {
+      size_score_list.value = []
+      matchStore.match.size_score_list?.some((item: any[]) => {
+        size_score_list.value.push(`<span style="color: #895b8a">${ item[0] }</span>：${ item[1] }场(${ (item[1] / total3 * 100).toFixed(2) }%)`)
+        if (size_score_list.value.length >= 3) {
+          return true
+        }
+      })
+      goal_number_list.value = []
+      matchStore.match.goal_number_list?.some((item: any[]) => {
+        goal_number_list.value.push(`<span style="color: #895b8a">${ item[0] }球</span>：${ item[1] }场(${ (item[1] / total3 * 100).toFixed(2) }%)`)
+        if (goal_number_list.value.length >= 3) {
+          return true
+        }
+      })
+      half_goal_number_list.value = []
+      matchStore.match.half_goal_number_list?.some((item: any[]) => {
+        half_goal_number_list.value.push(`<span style="color: #895b8a">${ item[0] }球</span>：${ item[1] }场(${ (item[1] / total3 * 100).toFixed(2) }%)`)
+        if (half_goal_number_list.value.length >= 3) {
+          return true
+        }
+      })
+    }
+  } else {
+    showSizeLeague.value = false
+  }
+  showTotalGoal.value = (matchStore.match.home_total_goal?.length || 0) > 0 && (matchStore.match.visit_total_goal?.length || 0) > 0
+  if (showTotalGoal.value) {
+    const option5 :echarts.EChartsOption = _.cloneDeep(defineTotalGoalChartOption()) as echarts.EChartsOption
+    // @ts-ignore
+    option5.xAxis.data = matchStore.match.home_total_goal.map((_, index: number) => (index + 1))
+    // @ts-ignore
+    option5.series[0].data = matchStore.match.home_total_goal.map(item => {
+      return item === 0 ? 0.2 : item
+    })
+    // @ts-ignore
+    option5.series[1].data = matchStore.match.visit_total_goal.map(item => {
+      return item === 0 ? 0.2 : item
+    })
+    // @ts-ignore
+    option5.series[2].data = Array.from({ length: matchStore.match.home_total_goal!.length }, () => matchStore.match.instant_size_most)
+    chart_total_goal.setOption(option5)
+  }
 }
 const onLookTrend = () => {
   xTrendList.value.getData()

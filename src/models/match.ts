@@ -98,6 +98,7 @@ export interface IMatchInfo {
   visit_loss_average?: number;
   visit_pan_percent?: number;
   infer_score?: string;
+  is_redis?: boolean;
 }
 
 export interface IEuropeOddsInfo {
