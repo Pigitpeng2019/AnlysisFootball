@@ -20,6 +20,7 @@
               }}，积分{{ matchStore.match.visit_score }}</span>
           </div>
         </div>
+        <div class="w-full flex justify-end items-center px-2"><a :href="`https://odds.500.com/fenxi/shuju-${matchStore.match.fid}.shtml`">查看原始数据</a><van-icon name="arrow-double-right" class="ms-1" color="#1890ff"/></div>
         <!--        <van-notice-bar wrapable :scrollable="false" text="请注意，本项目打法仅适用于滚球的亚盘和大小球，不适用于竞彩，（欧赔仅娱乐，准确率不高）建议在开场后一分钟查看分析最准确。" />-->
         <van-notice-bar v-if="matchStore.match.remark" color="#fff" background="#f00" class="w-full" :text="matchStore.match.remark" :scrollable="false" wrapable />
         <div class="panel" v-if="showEuropeAll">
@@ -117,7 +118,7 @@
           </van-button>
         </div>
         <div v-if="showTeamStatus" id="chart_team_status" class="chart" style="height: 250px"></div>
-        <vxe-table v-if="matchStore.match.infer_data?.length" :data="matchStore.match.infer_data" auto-resize style="width: calc(100% - 20px);margin: 20px auto 0" border max-height="3000" :footer-data="footerData">
+        <vxe-table v-if="matchStore.match.infer_data?.length" :data="matchStore.match.infer_data" auto-resize style="width: calc(100% - 20px);margin: 20px auto 0" border max-height="8000" :footer-data="footerData">
           <vxe-column title="主队" field="home" align="center" min-width="20%">
             <template #default="{row}">
               {{ row.home_match_group }}<br>
