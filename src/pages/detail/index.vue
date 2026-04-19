@@ -67,7 +67,7 @@
             查看欧赔匹配详情
           </van-button>
         </div>
-        <van-notice-bar v-if="matchStore.match.origin_pan_most!==undefined&&matchStore.match.instant_pan_most!==undefined" color="#1989fa" background="#ecf9ff" class="w-full mt-4" :scrollable="false">
+        <van-notice-bar v-if="matchStore.match.origin_pan_most!==undefined&&matchStore.match.instant_pan_most!==undefined" color="#67d5fe" background="rgba(103, 213, 254, 0.1)" class="w-full mt-4" :scrollable="false">
           亚盘初盘：{{ matchStore.match.origin_pan_most }}，亚盘即时盘：{{ matchStore.match.instant_pan_most }}
         </van-notice-bar>
         <div class="panel" v-if="showAsiaAll">
@@ -172,7 +172,7 @@
             比分均值计算：{{ matchStore.match.infer_score }}
           </span>
         </span>
-        <van-notice-bar v-if="matchStore.match.origin_size_most&&matchStore.match.instant_size_most" color="#1989fa" background="#ecf9ff" class="w-full mt-4" :scrollable="false">
+        <van-notice-bar v-if="matchStore.match.origin_size_most&&matchStore.match.instant_size_most" color="#67d5fe" background="rgba(103, 213, 254, 0.1)" class="w-full mt-4" :scrollable="false">
           大小球初盘：{{ matchStore.match.origin_size_most }}，大小球即时盘：{{ matchStore.match.instant_size_most }}
         </van-notice-bar>
         <span class="size-title" v-if="matchStore.match.poisson_small&&matchStore.match.poisson_big">泊松分布全联赛分主客场计算大小球</span>
