@@ -884,6 +884,10 @@ const onScreenShot = () => {
   height: 100px;
 }
 
+:deep(.van-pull-refresh) {
+  background: var(--bg-primary) !important;
+}
+
 :deep(.van-notice-bar__content) {
   white-space: pre-line;
 }
