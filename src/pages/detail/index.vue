@@ -889,37 +889,45 @@ const onScreenShot = () => {
 }
 
 :deep(.vxe-table) {
-  background: var(--bg-card);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-  font-size: 14px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin: 16px 12px;
-  width: calc(100% - 24px);
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  font-size: 14px !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  margin: 16px 12px !important;
+  width: calc(100% - 24px) !important;
 }
 
 :deep(.vxe-table--header) {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.03) !important;
 }
 
 :deep(.vxe-table--header-column) {
-  color: var(--text-secondary);
-  font-weight: 600;
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
 }
 
 :deep(.vxe-table--body-column) {
-  background: transparent;
-  color: var(--text-primary);
+  background: transparent !important;
+  color: var(--text-primary) !important;
 }
 
 :deep(.vxe-table--footer-column) {
-  color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
 }
 
 :deep(.vxe-table--render-default .vxe-table--border-line) {
-  border-color: var(--border-color);
+  border-color: var(--border-color) !important;
+}
+
+:deep(.vxe-table .vxe-body--row) {
+  border-color: var(--border-color) !important;
+}
+
+:deep(.vxe-table .vxe-body--row:hover) {
+  background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
 .table2 {

@@ -103,31 +103,39 @@ watch(() => props.type, (val) => {
 </script>
 
 <style scoped>
-:deep(.match-list-table.vxe-table) {
-  background: var(--bg-card);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-  font-size: 13px;
+:deep(.vxe-table) {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  font-size: 13px !important;
 }
 
-:deep(.match-list-table.vxe-table .vxe-header--column) {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-secondary);
-  font-weight: 600;
-  font-size: 12px;
+:deep(.vxe-table .vxe-header--row) {
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
-:deep(.match-list-table.vxe-table .vxe-body--column) {
-  background: transparent;
-  color: var(--text-primary);
+:deep(.vxe-table .vxe-header--column) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
 }
 
-:deep(.match-list-table.vxe-table .vxe-body--row) {
-  border-color: var(--border-color);
+:deep(.vxe-table .vxe-body--column) {
+  background: transparent !important;
+  color: var(--text-primary) !important;
 }
 
-:deep(.match-list-table.vxe-table .vxe-body--row.match-highlight) {
-  background-color: rgba(255, 101, 0, 0.1);
+:deep(.vxe-table .vxe-body--row) {
+  border-color: var(--border-color) !important;
+}
+
+:deep(.vxe-table .vxe-body--row:hover) {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+:deep(.vxe-table .vxe-body--row.match-highlight) {
+  background-color: rgba(255, 101, 0, 0.1) !important;
 }
 
 :deep(.van-tabs__nav) {
