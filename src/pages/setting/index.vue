@@ -56,6 +56,37 @@
           </template>
         </van-cell>
       </van-cell-group>
+      
+      <van-cell-group title="帮助反馈" class="settings-group">
+        <div class="feedback-content">
+          <div class="feedback-item">
+            <div class="feedback-icon">📢</div>
+            <div class="feedback-text">
+              请在GitHub上提交Issue，告知不准确的联赛和具体场次，以便我改进算法。有什么好的思路也可以提出。
+            </div>
+            <a class="github-link" href="https://github.com/czl0325/football_frontend" target="_blank">
+              <span class="link-icon">⭐</span>
+              <span>跳转链接，给个Star</span>
+              <span class="arrow">→</span>
+            </a>
+          </div>
+          
+          <div class="feedback-item">
+            <div class="feedback-icon">🧠</div>
+            <div class="feedback-text">
+              <div class="feedback-title">分析思路</div>
+              <div class="analysis-text">
+                以23/24英超第22轮利物浦主场对阵切尔西为例，利物浦赛前排名第一，积分48，切尔西赛前排名第10，积分31，每家公司开出初赔，初赔主队水位，客队水位，以及即时赔率，即时赔率主队水位，客队水位。<br><br>
+                通过大数据找出历史比赛中，初赔同样让球，主客队水位相同的比赛(误差±0.015)，即时赔率同样让球，主客队水位相同的比赛，如果是联赛，且联赛赛程已经超过1/4，因为利物浦排名比切尔西高，再加入筛选条件主队排名高于客队的比赛，以及主队积分>=客队积分+(48-31)的比赛，最终将找到的所有比赛计算赢盘输盘的场次，来得出赢盘输盘的概率。
+              </div>
+              <div class="update-text">
+                <span class="update-icon">🔄</span>
+                <span>更新让球推导：查找出本赛季主队主场和客队客场都对阵的同一支球队，获取这两场比赛各自的让初和让终，通过两场比赛让初+让初，让终+让终，计算出合理的让初和让终，最后把所有让初和让终取平均值，对比本场的让初和让终。</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </van-cell-group>
     </div>
     
     <div class="version-info">
@@ -232,6 +263,85 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
 .custom-switch {
   :deep(.van-switch--on) {
     background: var(--primary-gradient);
+  }
+}
+
+.feedback-content {
+  padding: 16px;
+}
+
+.feedback-item {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feedback-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.feedback-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.feedback-title {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.analysis-text {
+  margin-bottom: 12px;
+  line-height: 1.7;
+}
+
+.update-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.update-icon {
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.github-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--primary-gradient);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+  
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  
+  .link-icon {
+    font-size: 16px;
+  }
+  
+  .arrow {
+    margin-left: auto;
+    transition: transform 0.3s ease;
   }
 }
 

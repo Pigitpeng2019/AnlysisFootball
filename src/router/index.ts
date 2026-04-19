@@ -30,20 +30,11 @@ export const constantRouterMap = [
     }
   },
   {
-    path: "/feedback",
-    name: "Feedback",
-    component: () => import("@/pages/feedback/index.vue"),
-    meta: {
-      num: 2,
-      showTab: true
-    }
-  },
-  {
     path: "/setting",
     name: "Setting",
     component: () => import("@/pages/setting/index.vue"),
     meta: {
-      num: 3,
+      num: 2,
       showTab: true
     }
   }
