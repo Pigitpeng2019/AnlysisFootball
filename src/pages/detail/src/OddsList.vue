@@ -70,5 +70,37 @@ watch(() => props.type, (val) => {
 </script>
 
 <style scoped>
+.table-1 {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
 
+  th {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 10px 6px;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  td {
+    color: var(--text-primary);
+    padding: 10px 6px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
 </style>

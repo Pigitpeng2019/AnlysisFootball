@@ -780,12 +780,13 @@ const onScreenShot = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #f8f8f8;
+  background-color: var(--bg-primary);
+  padding-bottom: 20px;
 }
 
 .match-group {
   margin-top: 10px;
-  color: #333333;
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: bold;
 }
@@ -793,7 +794,7 @@ const onScreenShot = () => {
 .match-time {
   margin-top: 5px;
   margin-bottom: 10px;
-  color: red;
+  color: var(--danger-color);
   font-size: 12px;
 }
 
@@ -803,11 +804,16 @@ const onScreenShot = () => {
   align-items: center;
   padding: 20px;
   width: 100%;
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin: 10px 12px;
+  border: 1px solid var(--border-color);
 
   .score {
     font-weight: bold;
     font-size: 20px;
     margin: 0 20px;
+    color: var(--text-primary);
   }
 
   .team-item {
@@ -816,12 +822,12 @@ const onScreenShot = () => {
     justify-content: center;
     align-items: center;
     flex: 1;
-    color: #1890ff;
+    color: var(--primary-color);
     font-size: 16px;
     font-weight: bold;
 
     .rank {
-      color: orchid;
+      color: var(--text-muted);
       font-size: 12px;
       font-weight: normal;
       margin-top: 5px;
@@ -835,19 +841,25 @@ const onScreenShot = () => {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin: 10px 12px;
+  border: 1px solid var(--border-color);
 
   .title {
     font-size: 20px;
     font-weight: bold;
-    color: orange;
+    color: var(--primary-color);
     margin-bottom: 10px;
   }
 }
 
 .size-title {
   font-size: 14px;
-  color: #996633;
+  color: var(--warning-color);
   margin-top: 10px;
+  display: block;
+  padding: 0 12px;
 }
 
 .flex-horizontal-1 {
@@ -856,15 +868,15 @@ const onScreenShot = () => {
 }
 
 .win_count {
-  color: #ff3200;
+  color: var(--danger-color);
 }
 
 .even_count {
-  color: #99cc33;
+  color: var(--secondary-color);
 }
 
 .lose_count {
-  color: #1890ff;
+  color: var(--primary-color);
 }
 
 .chart {
@@ -874,5 +886,114 @@ const onScreenShot = () => {
 
 :deep(.van-notice-bar__content) {
   white-space: pre-line;
+}
+
+:deep(.vxe-table) {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  font-size: 14px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 16px 12px;
+  width: calc(100% - 24px);
+}
+
+:deep(.vxe-table--header) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+:deep(.vxe-table--header-column) {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+:deep(.vxe-table--body-column) {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+:deep(.vxe-table--footer-column) {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+:deep(.vxe-table--render-default .vxe-table--border-line) {
+  border-color: var(--border-color);
+}
+
+.table2 {
+  width: calc(100% - 24px);
+  margin: 16px 12px;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+
+  th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 12px 8px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  td {
+    color: var(--text-primary);
+    padding: 10px 8px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .highlight-value {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+}
+
+.table-1 {
+  width: calc(100% - 24px);
+  margin: 12px 12px;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+
+  th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 10px 8px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  td {
+    color: var(--text-primary);
+    padding: 10px 8px;
+    font-size: 14px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+:deep(.van-button--primary) {
+  background: var(--primary-gradient);
+  border: none;
+}
+
+:deep(.van-button) {
+  border-radius: 8px;
 }
 </style>

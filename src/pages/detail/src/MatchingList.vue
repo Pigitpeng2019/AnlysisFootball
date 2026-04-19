@@ -103,7 +103,46 @@ watch(() => props.type, (val) => {
 </script>
 
 <style scoped>
-::v-deep(.match-list-table.vxe-table .vxe-body--row.match-highlight) {
-  background-color: #F9CDAD;
+:deep(.match-list-table.vxe-table) {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+:deep(.match-list-table.vxe-table .vxe-header--column) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+:deep(.match-list-table.vxe-table .vxe-body--column) {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+:deep(.match-list-table.vxe-table .vxe-body--row) {
+  border-color: var(--border-color);
+}
+
+:deep(.match-list-table.vxe-table .vxe-body--row.match-highlight) {
+  background-color: rgba(255, 101, 0, 0.1);
+}
+
+:deep(.van-tabs__nav) {
+  background: var(--bg-secondary);
+}
+
+:deep(.van-tab) {
+  color: var(--text-secondary);
+}
+
+:deep(.van-tab--active) {
+  color: var(--primary-color);
+}
+
+:deep(.van-tabs__line) {
+  background: var(--primary-color);
 }
 </style>
