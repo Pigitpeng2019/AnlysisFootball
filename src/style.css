@@ -18,27 +18,62 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
+  /* Color System */
   --primary-color: #ff6500;
   --primary-gradient: linear-gradient(135deg, #ff6500 0%, #ff8c42 100%);
   --secondary-color: #00d4aa;
   --danger-color: #ff4757;
   --warning-color: #ffc107;
   
+  /* Background Colors */
   --bg-primary: #0a0e14;
   --bg-secondary: #141a23;
   --bg-card: rgba(30, 38, 50, 0.85);
   --bg-card-hover: rgba(40, 50, 65, 0.9);
   
+  /* Text Colors */
   --text-primary: #ffffff;
   --text-secondary: #9ca3af;
   --text-muted: #8b949e;
   
+  /* Border Colors */
   --border-color: rgba(255, 255, 255, 0.08);
   --border-glow: rgba(255, 101, 0, 0.3);
   
+  /* Shadows */
   --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-glow: 0 0 20px rgba(255, 101, 0, 0.15);
   
+  /* Spacing System (8pt Grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --space-8: 96px;
+  
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 32px;
+  --font-size-4xl: 48px;
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* Vant Components */
   --van-primary-color: #ff6500;
   --van-nav-bar-background: rgba(10, 14, 20, 0.95);
   --van-nav-bar-title-text-color: white;
