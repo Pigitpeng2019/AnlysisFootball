@@ -67,7 +67,7 @@
             查看欧赔匹配详情
           </van-button>
         </div>
-        <van-notice-bar v-if="matchStore.match.origin_pan_most!==undefined&&matchStore.match.instant_pan_most!==undefined" color="#1989fa" background="#ecf9ff" class="w-full mt-4" :scrollable="false">
+        <van-notice-bar v-if="matchStore.match.origin_pan_most!==undefined&&matchStore.match.instant_pan_most!==undefined" color="#67d5fe" background="rgba(103, 213, 254, 0.1)" class="w-full mt-4" :scrollable="false">
           亚盘初盘：{{ matchStore.match.origin_pan_most }}，亚盘即时盘：{{ matchStore.match.instant_pan_most }}
         </van-notice-bar>
         <div class="panel" v-if="showAsiaAll">
@@ -118,34 +118,47 @@
           </van-button>
         </div>
         <div v-if="showTeamStatus" id="chart_team_status" class="chart" style="height: 250px"></div>
-        <vxe-table v-if="matchStore.match.infer_data?.length" :data="matchStore.match.infer_data" auto-resize style="width: calc(100% - 20px);margin: 20px auto 0" border max-height="8000" :footer-data="footerData">
-          <vxe-column title="主队" field="home" align="center" min-width="20%">
-            <template #default="{row}">
-              {{ row.home_match_group }}<br>
-              <span style="color:#8B4513">{{ row.home }}</span>&nbsp;&nbsp;vs&nbsp;&nbsp;{{ row.infer }}<br>
-              比分：{{ row.home_field_score }}<br>
-              让初：{{ row.home_concede_origin }}<br>
-              让终：{{ row.home_concede_terminus }}
-            </template>
-          </vxe-column>
-          <vxe-column title="客队" field="visit" align="center" min-width="20%">
-            <template #default="{row}">
-              {{ row.visit_match_group }}<br>
-              {{ row.infer }}&nbsp;&nbsp;vs&nbsp;&nbsp;<span style="color:#FF1493">{{ row.visit }}</span><br>
-              比分：{{ row.visit_field_score }}<br>
-              让初：{{ row.visit_concede_origin }}<br>
-              让终：{{ row.visit_concede_terminus }}
-            </template>
-          </vxe-column>
-          <vxe-column title="让初推导" field="origin_infer" align="center" max-width="80"/>
-          <vxe-column title="让终推导" field="instant_infer" align="center" max-width="80"/>
-          <vxe-column title="结果" align="center" max-width="60">
-            <template #default="{row}">
-              {{ row.home_concede_result }}{{ row.visit_concede_result }}
-            </template>
-          </vxe-column>
-        </vxe-table>
-        <table v-if="matchStore.match.infer_data?.length" style="width: calc(100% - 20px);margin: 20px auto 0" class="table2">
+        <div class="infer-table-wrapper" v-if="matchStore.match.infer_data?.length">
+          <table class="infer-table">
+            <thead>
+              <tr>
+                <th>主队</th>
+                <th>客队</th>
+                <th>让初推导</th>
+                <th>让终推导</th>
+                <th>结果</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, index) in matchStore.match.infer_data" :key="index">
+                <td class="home-cell">
+                  <div class="cell-content">
+                    <span class="match-group">{{ row.home_match_group }}</span>
+                    <span class="team-name home-name">{{ row.home }}</span>
+                    <span class="vs-text">vs {{ row.infer }}</span>
+                    <span class="score-info">比分：{{ row.home_field_score }}</span>
+                    <span class="concede-info">让初：{{ row.home_concede_origin }}</span>
+                    <span class="concede-info">让终：{{ row.home_concede_terminus }}</span>
+                  </div>
+                </td>
+                <td class="visit-cell">
+                  <div class="cell-content">
+                    <span class="match-group">{{ row.visit_match_group }}</span>
+                    <span class="team-name visit-name">{{ row.visit }}</span>
+                    <span class="vs-text">{{ row.infer }} vs</span>
+                    <span class="score-info">比分：{{ row.visit_field_score }}</span>
+                    <span class="concede-info">让初：{{ row.visit_concede_origin }}</span>
+                    <span class="concede-info">让终：{{ row.visit_concede_terminus }}</span>
+                  </div>
+                </td>
+                <td>{{ row.origin_infer }}</td>
+                <td>{{ row.instant_infer }}</td>
+                <td class="result-cell">{{ row.home_concede_result }}{{ row.visit_concede_result }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <table v-if="matchStore.match.infer_data?.length" class="table2">
           <thead>
             <tr><th>让球推导</th><th>主队</th><th>客队</th>
           </tr>
@@ -159,24 +172,26 @@
             <tr><td>赢盘率</td><td>{{ matchStore.match.home_pan_percent }}%</td><td>{{ matchStore.match.visit_pan_percent }}%</td></tr>
           </tbody>
         </table>
-        <span v-if="matchStore.match.infer_data?.length" style="width: calc(100% - 20px);margin: 20px auto 0">
-          <span class="text-red-500">
+        <div class="analysis-text" v-if="matchStore.match.infer_data?.length">
+          <p class="text-red-500">
           让初推导平均值：{{ matchStore.match.origin_infer_average }} {{ Math.abs(matchStore.match!.origin_infer_average!) < Math.abs(matchStore.match!.origin_pan_most!) ? '<' : '>' }} 本场初始让球：{{ matchStore.match!.origin_pan_most! }}，
             {{ Math.abs(matchStore.match!.origin_infer_average!) - Math.abs(matchStore.match!.origin_pan_most!) < -0.5 ? '让初偏深。' : '' }}
             {{ Math.abs(matchStore.match!.origin_infer_average!) - Math.abs(matchStore.match!.origin_pan_most!) > 0.5 ? '让初偏浅。' : '' }}
-            <br>
+          </p>
+          <p class="text-red-500">
           让终推导平均值：{{ matchStore.match.instant_infer_average }} {{ Math.abs(matchStore.match!.instant_infer_average!) < Math.abs(matchStore.match!.instant_pan_most!) ? '<' : '>' }} 本场最终让球：{{ matchStore.match!.instant_pan_most! }}。
             {{ Math.abs(matchStore.match!.instant_infer_average!) - Math.abs(matchStore.match!.instant_pan_most!) < -0.5 ? '让终偏深。' : '' }}
             {{ Math.abs(matchStore.match!.instant_infer_average!) - Math.abs(matchStore.match!.instant_pan_most!) > 0.5 ? '让终偏浅。' : '' }}
-            <br>
+          </p>
+          <p class="text-red-500">
             比分均值计算：{{ matchStore.match.infer_score }}
-          </span>
-        </span>
-        <van-notice-bar v-if="matchStore.match.origin_size_most&&matchStore.match.instant_size_most" color="#1989fa" background="#ecf9ff" class="w-full mt-4" :scrollable="false">
+          </p>
+        </div>
+        <van-notice-bar v-if="matchStore.match.origin_size_most&&matchStore.match.instant_size_most" color="#67d5fe" background="rgba(103, 213, 254, 0.1)" class="w-full mt-4" :scrollable="false">
           大小球初盘：{{ matchStore.match.origin_size_most }}，大小球即时盘：{{ matchStore.match.instant_size_most }}
         </van-notice-bar>
         <span class="size-title" v-if="matchStore.match.poisson_small&&matchStore.match.poisson_big">泊松分布全联赛分主客场计算大小球</span>
-        <table v-if="matchStore.match.poisson_small&&matchStore.match.poisson_big" class="table-1 w-full mt-3 px-4">
+        <table v-if="matchStore.match.poisson_small&&matchStore.match.poisson_big" class="table-1">
           <thead>
           <tr>
             <th>泊松{{ matchStore.match.instant_size_most ?? 2.5 }}小球概率</th>
@@ -191,7 +206,7 @@
           </tbody>
         </table>
         <span class="size-title" v-if="matchStore.match.poisson_small_limit&&matchStore.match.poisson_big_limit">泊松分布全联赛不分主客场取近5场计算大小球</span>
-        <table v-if="matchStore.match.poisson_small_limit&&matchStore.match.poisson_big_limit" class="table-1 w-full mt-3 px-4">
+        <table v-if="matchStore.match.poisson_small_limit&&matchStore.match.poisson_big_limit" class="table-1">
           <thead>
           <tr>
             <th>泊松{{ matchStore.match.instant_size_most ?? 2.5 }}小球概率</th>
@@ -285,7 +300,6 @@ import { useRoute, useRouter } from "vue-router"
 import * as echarts from "echarts"
 import _ from "lodash"
 import { useLocalStorage } from "@vueuse/core"
-import { VxeTablePropTypes } from "vxe-table"
 import { domToJpeg } from "modern-screenshot"
 import OddsList from "@/pages/detail/src/OddsList.vue"
 import MatchingList from "@/pages/detail/src/MatchingList.vue"
@@ -330,9 +344,6 @@ const asia_score_list = ref<string[]>([])
 const size_score_list = ref<string[]>([])
 const goal_number_list = ref<string[]>([])
 const half_goal_number_list = ref<string[]>([])
-const footerData = ref<VxeTablePropTypes.FooterData>([
-  { home: `主队让初平均：${matchStore.match.home_concede_origin_average }\n主队让终平均：${matchStore.match.home_concede_terminus_average }`, visit: `客队让初平均：${matchStore.match.visit_concede_origin_average }\n客队让终平均：${matchStore.match.visit_concede_terminus_average }`, origin_infer: `让初推导平均：${matchStore.match.origin_infer_average }`, instant_infer: `让终推导平均：${matchStore.match.instant_infer_average }` }
-])
 const clearAllData = () => {
   showEuropeAll.value = true
   showEuropeLeague.value = true
@@ -884,6 +895,155 @@ const onScreenShot = () => {
   height: 100px;
 }
 
+/* 推理数据表格样式 - 完整显示文字 */
+.infer-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin: 16px 0;
+  padding: 0 12px;
+}
+
+.infer-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.infer-table thead {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.infer-table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 14px 12px;
+  font-size: 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.infer-table td {
+  color: var(--text-primary);
+  padding: 12px;
+  font-size: 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: top;
+}
+
+.infer-table tr:last-child td {
+  border-bottom: none;
+}
+
+.infer-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.infer-table .cell-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.infer-table .match-group {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.infer-table .team-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.infer-table .home-name {
+  color: #8B4513;
+}
+
+.infer-table .visit-name {
+  color: #FF1493;
+}
+
+.infer-table .vs-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.infer-table .score-info {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.infer-table .concede-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.infer-table .result-cell {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* 分析文本样式 */
+.analysis-text {
+  width: 100%;
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  
+  p {
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+    font-size: 14px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* 表格容器样式，添加横向滚动 */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin: 16px 0;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 101, 0, 0.5);
+    border-radius: 12px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 101, 0, 0.8);
+  }
+}
+
 :deep(.van-pull-refresh) {
   background: var(--bg-primary) !important;
 }
@@ -892,51 +1052,9 @@ const onScreenShot = () => {
   white-space: pre-line;
 }
 
-:deep(.vxe-table) {
-  background: var(--bg-card) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-primary) !important;
-  font-size: 14px !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  margin: 16px 12px !important;
-  width: calc(100% - 24px) !important;
-}
-
-:deep(.vxe-table--header) {
-  background: rgba(255, 255, 255, 0.03) !important;
-}
-
-:deep(.vxe-table--header-column) {
-  color: var(--text-secondary) !important;
-  font-weight: 600 !important;
-}
-
-:deep(.vxe-table--body-column) {
-  background: transparent !important;
-  color: var(--text-primary) !important;
-}
-
-:deep(.vxe-table--footer-column) {
-  color: var(--text-secondary) !important;
-  background: rgba(255, 255, 255, 0.02) !important;
-}
-
-:deep(.vxe-table--render-default .vxe-table--border-line) {
-  border-color: var(--border-color) !important;
-}
-
-:deep(.vxe-table .vxe-body--row) {
-  border-color: var(--border-color) !important;
-}
-
-:deep(.vxe-table .vxe-body--row:hover) {
-  background-color: rgba(255, 255, 255, 0.02) !important;
-}
-
 .table2 {
-  width: calc(100% - 24px);
-  margin: 16px 12px;
+  width: 100%;
+  margin: 16px 0;
   border-collapse: collapse;
   background: var(--bg-card);
   border-radius: 12px;
@@ -947,16 +1065,22 @@ const onScreenShot = () => {
     background: rgba(255, 255, 255, 0.03);
     color: var(--text-secondary);
     font-weight: 600;
-    padding: 12px 8px;
+    padding: 12px 12px;
     font-size: 13px;
     border-bottom: 1px solid var(--border-color);
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
   }
 
   td {
     color: var(--text-primary);
-    padding: 10px 8px;
+    padding: 10px 12px;
     font-size: 13px;
     border-bottom: 1px solid var(--border-color);
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
   }
 
   tr:last-child td {
@@ -970,8 +1094,8 @@ const onScreenShot = () => {
 }
 
 .table-1 {
-  width: calc(100% - 24px);
-  margin: 12px 12px;
+  width: 100%;
+  margin: 12px 0;
   border-collapse: collapse;
   background: var(--bg-card);
   border-radius: 12px;
@@ -982,17 +1106,22 @@ const onScreenShot = () => {
     background: rgba(255, 255, 255, 0.03);
     color: var(--text-secondary);
     font-weight: 600;
-    padding: 10px 8px;
+    padding: 10px 12px;
     font-size: 12px;
     border-bottom: 1px solid var(--border-color);
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
   }
 
   td {
     color: var(--text-primary);
-    padding: 10px 8px;
+    padding: 10px 12px;
     font-size: 14px;
     text-align: center;
     border-bottom: 1px solid var(--border-color);
+    white-space: normal;
+    word-break: break-word;
   }
 
   tr:last-child td {

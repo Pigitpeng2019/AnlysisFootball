@@ -1,26 +1,47 @@
+.table-1 {
+  width: 100%;
+  margin: 12px 0;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
 .table-1 thead, .table-1 tr {
   border-top-width: 1px;
   border-top-style: solid;
-  border-top-color: rgb(211, 202, 221);
+  border-top-color: var(--border-color);
   text-align: center;
 }
 .table-1 {
   border-bottom-width: 1px;
   border-bottom-style: solid;
-  border-bottom-color: rgb(211, 202, 221);
+  border-bottom-color: var(--border-color);
 }
 .table-1 td, .table-1 th {
-  padding: 5px 10px;
+  padding: 10px 12px;
   font-size: 12px;
   font-family: Verdana, serif;
-  color: rgb(95, 74, 121);
+  color: var(--text-primary);
   text-align: center;
+  white-space: normal;
+  word-break: break-word;
+}
+.table-1 th {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
 }
 .table-1 tr:nth-child(even) {
-  background: rgb(223, 216, 232)
+  background: rgba(255, 255, 255, 0.02);
 }
 .table-1 tr:nth-child(odd) {
-  background: #FFF
+  background: rgba(255, 255, 255, 0.03);
+}
+.table-1 tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transition: background-color 0.15s ease;
 }
 
 
@@ -30,27 +51,40 @@
   font-family: sans-serif;
   min-width: 400px;
   box-shadow: 0 0 20px rgba(0,0,0,0.15);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
 }
 .table2 thead tr {
-  background-color: #009879;
-  color: #ffffff;
-  text-align: left;
+  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  text-align: center;
 }
 .table2 th, .table2 td {
-  padding: 5px 10px;
+  padding: 12px 12px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
 }
 .table2 tbody tr {
-  border-bottom: 1px solid #dddddd;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.15s ease;
 }
 .table2 tbody tr:nth-of-type(even) {
-  background-color: #f3f3f3;
+  background-color: rgba(255, 255, 255, 0.02);
+}
+.table2 tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
 }
 .table2 tbody tr:last-of-type {
-  border-bottom: 2px solid #009879;
+  border-bottom: none;
 }
 .table2 tbody tr.active-row {
   font-weight: bold;
-  color: #009879;
+  color: var(--primary-color);
 }
 
 
