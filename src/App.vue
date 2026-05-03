@@ -25,8 +25,20 @@
             <div class="nav-indicator" v-if="route.path === '/home'"></div>
           </router-link>
           
-          <router-link 
-            to="/reanalyze" 
+          <router-link
+            to="/prediction"
+            class="nav-item"
+            :class="{ active: route.path === '/prediction' }"
+          >
+            <div class="nav-icon">
+              <van-icon name="chart-trending-o" size="20" />
+            </div>
+            <span class="nav-text">数据预测</span>
+            <div class="nav-indicator" v-if="route.path === '/prediction'"></div>
+          </router-link>
+
+          <router-link
+            to="/reanalyze"
             class="nav-item"
             :class="{ active: route.path === '/reanalyze' }"
           >

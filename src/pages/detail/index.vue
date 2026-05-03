@@ -22,7 +22,7 @@
         </div>
         <div class="w-full flex justify-end items-center px-2"><a :href="`https://odds.500.com/fenxi/shuju-${matchStore.match.fid}.shtml`">查看原始数据</a><van-icon name="arrow-double-right" class="ms-1" color="#1890ff"/></div>
         <!--        <van-notice-bar wrapable :scrollable="false" text="请注意，本项目打法仅适用于滚球的亚盘和大小球，不适用于竞彩，（欧赔仅娱乐，准确率不高）建议在开场后一分钟查看分析最准确。" />-->
-        <van-notice-bar v-if="matchStore.match.remark" color="#fff" background="#f00" class="w-full" :text="matchStore.match.remark" :scrollable="false" wrapable />
+        <van-notice-bar v-if="matchStore.match.remark" color="#fbbf24" background="rgba(217, 119, 6, 0.12)" class="w-full" :text="matchStore.match.remark" :scrollable="false" wrapable />
         <div class="panel" v-if="showEuropeAll">
           <div class="title">
             欧赔全网匹配结果：
@@ -173,17 +173,17 @@
           </tbody>
         </table>
         <div class="analysis-text" v-if="matchStore.match.infer_data?.length">
-          <p class="text-red-500">
+          <p>
           让初推导平均值：{{ matchStore.match.origin_infer_average }} {{ Math.abs(matchStore.match!.origin_infer_average!) < Math.abs(matchStore.match!.origin_pan_most!) ? '<' : '>' }} 本场初始让球：{{ matchStore.match!.origin_pan_most! }}，
             {{ Math.abs(matchStore.match!.origin_infer_average!) - Math.abs(matchStore.match!.origin_pan_most!) < -0.5 ? '让初偏深。' : '' }}
             {{ Math.abs(matchStore.match!.origin_infer_average!) - Math.abs(matchStore.match!.origin_pan_most!) > 0.5 ? '让初偏浅。' : '' }}
           </p>
-          <p class="text-red-500">
+          <p>
           让终推导平均值：{{ matchStore.match.instant_infer_average }} {{ Math.abs(matchStore.match!.instant_infer_average!) < Math.abs(matchStore.match!.instant_pan_most!) ? '<' : '>' }} 本场最终让球：{{ matchStore.match!.instant_pan_most! }}。
             {{ Math.abs(matchStore.match!.instant_infer_average!) - Math.abs(matchStore.match!.instant_pan_most!) < -0.5 ? '让终偏深。' : '' }}
             {{ Math.abs(matchStore.match!.instant_infer_average!) - Math.abs(matchStore.match!.instant_pan_most!) > 0.5 ? '让终偏浅。' : '' }}
           </p>
-          <p class="text-red-500">
+          <p>
             比分均值计算：{{ matchStore.match.infer_score }}
           </p>
         </div>
@@ -344,6 +344,51 @@ const asia_score_list = ref<string[]>([])
 const size_score_list = ref<string[]>([])
 const goal_number_list = ref<string[]>([])
 const half_goal_number_list = ref<string[]>([])
+
+// --- 性能优化：图表渲染队列 & 懒初始化 ---
+const chartRenderQueue: (() => void)[] = []
+let chartQueueFlushing = false
+const scheduleChartRender = (fn: () => void) => {
+  chartRenderQueue.push(fn)
+  if (!chartQueueFlushing) {
+    chartQueueFlushing = true
+    requestAnimationFrame(flushChartQueue)
+  }
+}
+const flushChartQueue = () => {
+  if (chartRenderQueue.length === 0) {
+    chartQueueFlushing = false
+    return
+  }
+  const fn = chartRenderQueue.shift()!
+  fn()
+  requestAnimationFrame(flushChartQueue)
+}
+
+// 图表选项模板缓存，避免重复 deepClone 大对象
+const chartOptionCache: Record<string, echarts.EChartsOption> = {}
+const getChartOption = (type: number, name: string): echarts.EChartsOption => {
+  const key = `${type}_${name}`
+  if (!chartOptionCache[key]) {
+    chartOptionCache[key] = defineChartOption(type, name)
+  }
+  return _.cloneDeep(chartOptionCache[key])
+}
+
+// 团队状态 & 总进球选项模板缓存
+let _teamStatusOption: echarts.EChartsOption | null = null
+const getTeamStatusOption = (): echarts.EChartsOption => {
+  if (!_teamStatusOption) _teamStatusOption = defineTeamStatusChartOption()
+  return _.cloneDeep(_teamStatusOption)
+}
+let _totalGoalOption: echarts.EChartsOption | null = null
+const getTotalGoalOption = (): echarts.EChartsOption => {
+  if (!_totalGoalOption) _totalGoalOption = defineTotalGoalChartOption()
+  return _.cloneDeep(_totalGoalOption)
+}
+
+// ECharts 实例收集，用于统一的 resize/clear/dispose
+const chartRefs: echarts.EChartsType[] = []
 const clearAllData = () => {
   showEuropeAll.value = true
   showEuropeLeague.value = true
@@ -356,14 +401,7 @@ const clearAllData = () => {
   size_score_list.value = []
   goal_number_list.value = []
   half_goal_number_list.value = []
-  chart_europe_all?.clear()
-  chart_europe_league?.clear()
-  chart_asia_all?.clear()
-  chart_asia_league?.clear()
-  chart_size_all?.clear()
-  chart_size_league?.clear()
-  chart_team_status?.clear()
-  chart_total_goal?.clear()
+  chartRefs.forEach(c => c?.clear())
   matchStore.match = {}
 }
 let fid = route.query.fid
@@ -420,13 +458,7 @@ const onAnalysisMatch = () => {
     closeToast()
   }).catch(() => {
     closeToast()
-    chart_europe_all?.clear()
-    chart_europe_league?.clear()
-    chart_asia_all?.clear()
-    chart_asia_league?.clear()
-    chart_size_all?.clear()
-    chart_size_league?.clear()
-    chart_team_status?.clear()
+    chartRefs.forEach(c => c?.clear())
     europe_score_list.value = []
     asia_score_list.value = []
     size_score_list.value = []
@@ -462,7 +494,7 @@ const operateMatchData = () => {
   }
   showEuropeAll.value = (matchStore.match?.europe_win_all ?? 0) + (matchStore.match?.europe_even_all ?? 0) + (matchStore.match?.europe_lose_all ?? 0) > 0
   if (showEuropeAll.value) {
-    const option1 = _.cloneDeep(defineChartOption(1, "欧赔全网"))
+    const option1 = getChartOption(1, "欧赔全网")
     const total1 = (matchStore.match.europe_win_all ?? 0) + (matchStore.match.europe_even_all ?? 0) + (matchStore.match.europe_lose_all ?? 0)
     if (total1 > 0) {
       // @ts-ignore
@@ -483,11 +515,11 @@ const operateMatchData = () => {
           }
         }
       }
-      chart_europe_all.setOption(option1)
+      scheduleChartRender(() => chart_europe_all.setOption(option1))
     }
     showEuropeLeague.value = (matchStore.match?.europe_win_league ?? 0) + (matchStore.match?.europe_even_league ?? 0) + (matchStore.match?.europe_lose_league ?? 0) > 0
     if (showEuropeLeague.value) {
-      const option11: echarts.EChartsOption = _.cloneDeep(defineChartOption(1, "欧赔本联赛"))
+      const option11 = getChartOption(1, "欧赔本联赛")
       const total11 = (matchStore.match.europe_win_league ?? 0) + (matchStore.match.europe_even_league ?? 0) + (matchStore.match.europe_lose_league ?? 0)
       if (total11 > 0) {
         // @ts-ignore
@@ -508,7 +540,7 @@ const operateMatchData = () => {
             }
           }
         }
-        chart_europe_league.setOption(option11)
+        scheduleChartRender(() => chart_europe_league.setOption(option11))
       }
     }
     if ((matchStore.match.europe_score_list?.length || 0) > 0) {
@@ -525,7 +557,7 @@ const operateMatchData = () => {
   }
   showAsiaAll.value = (matchStore.match.asia_win_all ?? 0) + (matchStore.match.asia_run_all ?? 0) + (matchStore.match.asia_lose_all ?? 0) > 0
   if (showAsiaAll.value) {
-    const option2 = _.cloneDeep(defineChartOption(2, "亚盘全网")) as echarts.EChartsOption
+    const option2 = getChartOption(2, "亚盘全网") as echarts.EChartsOption
     const total2 = (matchStore.match.asia_win_all ?? 0) + (matchStore.match.asia_run_all ?? 0) + (matchStore.match.asia_lose_all ?? 0)
     if (total2 > 0) {
       // @ts-ignore
@@ -546,11 +578,11 @@ const operateMatchData = () => {
           }
         }
       }
-      chart_asia_all.setOption(option2)
+      scheduleChartRender(() => chart_asia_all.setOption(option2))
     }
     showAsiaLeague.value = (matchStore.match.asia_win_league ?? 0) + (matchStore.match.asia_run_league ?? 0) + (matchStore.match.asia_lose_league ?? 0) > 0
     if (showAsiaLeague.value) {
-      const option22 = _.cloneDeep(defineChartOption(2, "亚盘本联赛"))
+      const option22 = getChartOption(2, "亚盘本联赛")
       const total122 = (matchStore.match.asia_win_league ?? 0) + (matchStore.match.asia_run_league ?? 0) + (matchStore.match.asia_lose_league ?? 0)
       if (total122 > 0) {
         // @ts-ignore
@@ -571,7 +603,7 @@ const operateMatchData = () => {
             }
           }
         }
-        chart_asia_league.setOption(option22)
+        scheduleChartRender(() => chart_asia_league.setOption(option22))
       }
     }
     if ((matchStore.match.asia_score_list?.length || 0) > 0) {
@@ -588,18 +620,18 @@ const operateMatchData = () => {
   }
   showTeamStatus.value = (matchStore.match.home_status?.length || 0) > 0 && (matchStore.match.visit_status?.length || 0) > 0
   if (showTeamStatus.value) {
-    const option4 :echarts.EChartsOption = _.cloneDeep(defineTeamStatusChartOption()) as echarts.EChartsOption
+    const option4 = getTeamStatusOption() as echarts.EChartsOption
     // @ts-ignore
     option4.xAxis.data = matchStore.match.home_status?.map((_, index: number) => (index + 1))
     // @ts-ignore
     option4.series[0].data = matchStore.match.home_status
     // @ts-ignore
     option4.series[1].data = matchStore.match.visit_status
-    chart_team_status.setOption(option4)
+    scheduleChartRender(() => chart_team_status.setOption(option4))
   }
   showSizeAll.value = (matchStore.match.size_big_all ?? 0) + (matchStore.match.size_run_all ?? 0) + (matchStore.match.size_small_all ?? 0) > 0
   if (showSizeAll.value) {
-    const option3 = _.cloneDeep(defineChartOption(3, "大小球全网"))
+    const option3 = getChartOption(3, "大小球全网")
     const total3 = (matchStore.match.size_big_all ?? 0) + (matchStore.match.size_run_all ?? 0) + (matchStore.match.size_small_all ?? 0)
     // @ts-ignore
     option3.series[0].data = [(matchStore.match.size_big_all ?? 0) / total3]
@@ -619,10 +651,10 @@ const operateMatchData = () => {
         }
       }
     }
-    chart_size_all.setOption(option3)
+    scheduleChartRender(() => chart_size_all.setOption(option3))
     showSizeLeague.value = (matchStore.match.size_big_league ?? 0) + (matchStore.match.size_run_league ?? 0) + (matchStore.match.size_small_league ?? 0) > 0
     if (showSizeLeague.value) {
-      const option33 = _.cloneDeep(defineChartOption(3, "大小球本联赛"))
+      const option33 = getChartOption(3, "大小球本联赛")
       const total33 = (matchStore.match.size_big_league ?? 0) + (matchStore.match.size_run_league ?? 0) + (matchStore.match.size_small_league ?? 0)
       if (total33 > 0) {
         // @ts-ignore
@@ -643,7 +675,7 @@ const operateMatchData = () => {
             }
           }
         }
-        chart_size_league.setOption(option33)
+        scheduleChartRender(() => chart_size_league.setOption(option33))
       }
     }
     if ((matchStore.match.size_score_list?.length || 0) > 0) {
@@ -674,7 +706,7 @@ const operateMatchData = () => {
   }
   showTotalGoal.value = (matchStore.match.home_total_goal?.length || 0) > 0 && (matchStore.match.visit_total_goal?.length || 0) > 0
   if (showTotalGoal.value) {
-    const option5 :echarts.EChartsOption = _.cloneDeep(defineTotalGoalChartOption()) as echarts.EChartsOption
+    const option5 = getTotalGoalOption() as echarts.EChartsOption
     // @ts-ignore
     option5.xAxis.data = matchStore.match.home_total_goal.map((_, index: number) => (index + 1))
     // @ts-ignore
@@ -687,68 +719,37 @@ const operateMatchData = () => {
     })
     // @ts-ignore
     option5.series[2].data = Array.from({ length: matchStore.match.home_total_goal!.length }, () => matchStore.match.instant_size_most)
-    chart_total_goal.setOption(option5)
+    scheduleChartRender(() => chart_total_goal.setOption(option5))
   }
 }
 const onLookTrend = () => {
   xTrendList.value.getData()
 }
 onMounted(() => {
-  const dom1 = document.getElementById('chart_europe_all')
-  if (dom1) {
-    chart_europe_all = echarts.init(dom1)
+  const initChart = (id: string, setVar: (inst: echarts.EChartsType) => void) => {
+    const dom = document.getElementById(id)
+    if (!dom) return
+    const instance = echarts.init(dom)
+    setVar(instance)
+    chartRefs.push(instance)
   }
-  const dom2 = document.getElementById("chart_europe_league")
-  if (dom2) {
-    chart_europe_league = echarts.init(dom2)
-  }
-  const dom3 = document.getElementById("chart_asia_all")
-  if (dom3) {
-    chart_asia_all = echarts.init(dom3)
-  }
-  const dom4 = document.getElementById("chart_asia_league")
-  if (dom4) {
-    chart_asia_league = echarts.init(dom4)
-  }
-  const dom5 = document.getElementById("chart_size_all")
-  if (dom5) {
-    chart_size_all = echarts.init(dom5)
-  }
-  const dom6 = document.getElementById("chart_size_league")
-  if (dom6) {
-    chart_size_league = echarts.init(dom6)
-  }
-  const dom7 = document.getElementById("chart_team_status")
-  if (dom7) {
-    chart_team_status = echarts.init(dom7)
-  }
-  const dom8 = document.getElementById("chart_total_goal")
-  if (dom8) {
-    chart_total_goal = echarts.init(dom8)
-  }
+  initChart('chart_europe_all', (v) => { chart_europe_all = v })
+  initChart('chart_europe_league', (v) => { chart_europe_league = v })
+  initChart('chart_asia_all', (v) => { chart_asia_all = v })
+  initChart('chart_asia_league', (v) => { chart_asia_league = v })
+  initChart('chart_size_all', (v) => { chart_size_all = v })
+  initChart('chart_size_league', (v) => { chart_size_league = v })
+  initChart('chart_team_status', (v) => { chart_team_status = v })
+  initChart('chart_total_goal', (v) => { chart_total_goal = v })
   window.addEventListener("resize", onChartResize)
   onGetMatchInfo()
 })
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onChartResize)
-  chart_europe_all?.dispose()
-  chart_europe_league?.dispose()
-  chart_asia_all?.dispose()
-  chart_asia_league?.dispose()
-  chart_size_all?.dispose()
-  chart_size_league?.dispose()
-  chart_team_status?.dispose()
-  chart_total_goal?.dispose()
+  chartRefs.forEach(c => c?.dispose())
 })
 const onChartResize = () => {
-  chart_europe_all?.resize()
-  chart_europe_league?.resize()
-  chart_asia_all?.resize()
-  chart_asia_league?.resize()
-  chart_size_all?.resize()
-  chart_size_league?.resize()
-  chart_team_status?.resize()
-  chart_total_goal?.resize()
+  chartRefs.forEach(c => c?.resize())
 }
 const historyMatches = useLocalStorage<any[]>("history_matches", [])
 const addHistoryMatch = (match: IMatchInfo) => {
@@ -1061,21 +1062,23 @@ const onScreenShot = () => {
   color: var(--primary-color);
 }
 
-/* 分析文本样式 */
+/* 分析文本样式 - 暖色系 */
 .analysis-text {
   width: 100%;
   margin: 16px 0;
   padding: 16px;
-  background: var(--bg-card);
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(234, 88, 12, 0.04) 100%);
   border-radius: 12px;
-  border: 1px solid var(--border-color);
-  
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  box-shadow: 0 2px 12px rgba(217, 119, 6, 0.06);
+
   p {
     margin: 0 0 8px 0;
     line-height: var(--line-height-relaxed);
     font-size: var(--font-size-sm);
     letter-spacing: var(--letter-spacing-normal);
-    
+    color: #fbbf24;
+
     &:last-child {
       margin-bottom: 0;
     }

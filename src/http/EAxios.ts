@@ -54,6 +54,7 @@ export class EAxios {
             message: "网络连接异常,请稍后再试!",
             position: 'bottom',
           })
+          return Promise.reject(err)
         }
       })
   }

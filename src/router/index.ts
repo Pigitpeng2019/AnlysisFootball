@@ -21,11 +21,20 @@ export const constantRouterMap = [
     component: () => import("@/pages/detail/index.vue"),
   },
   {
+    path: "/prediction",
+    name: "Prediction",
+    component: () => import("@/pages/prediction/index.vue"),
+    meta: {
+      num: 1,
+      showTab: true
+    }
+  },
+  {
     path: "/reanalyze",
     name: "Reanalyze",
     component: () => import("@/pages/reanalyze/index.vue"),
     meta: {
-      num: 1,
+      num: 2,
       showTab: true
     }
   },
