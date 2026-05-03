@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <van-nav-bar title="详细分析" fixed left-arrow clickable @click-left="router.back()" class="w-full" />
+    <van-nav-bar title="详细分析" fixed left-arrow clickable @click-left="router.back()" class="w-full nav-bar" />
     <van-pull-refresh class="w-full min-h-screen" v-model="isLoading" @refresh="onGetMatchInfo">
       <div class="content-container">
         <span class="match-group">{{ matchStore.match.match_group }}</span>
@@ -786,27 +786,85 @@ const onScreenShot = () => {
 </script>
 
 <style lang="less" scoped>
+.nav-bar {
+  background: linear-gradient(135deg, rgba(15, 15, 22, 0.95) 0%, rgba(22, 22, 30, 0.92) 100%) !important;
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  box-shadow: 
+    0 4px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  border-bottom: none;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 200%;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(139, 92, 246, 0.4) 20%, 
+      rgba(99, 102, 241, 0.6) 50%, 
+      rgba(139, 92, 246, 0.4) 80%, 
+      transparent 100%);
+    animation: shimmerLine 3s ease-in-out infinite;
+  }
+
+  :deep(.van-nav-bar__title) {
+    color: #f8fafc !important;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    letter-spacing: var(--letter-spacing-tight);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  :deep(.van-nav-bar__left),
+  :deep(.van-nav-bar__right) {
+    color: #a78bfa;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    
+    &:active {
+      opacity: 0.7;
+      transform: scale(0.95);
+    }
+  }
+}
+
 .content-container {
   width: 100%;
+  max-width: 90%;
+  margin: 0 auto;
+  padding: 0 5%;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: var(--bg-primary);
   padding-bottom: 20px;
+  box-sizing: border-box;
 }
 
 .match-group {
   margin-top: 10px;
   color: var(--text-primary);
-  font-size: 20px;
-  font-weight: bold;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .match-time {
   margin-top: 5px;
   margin-bottom: 10px;
   color: var(--danger-color);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .top-view {
@@ -821,10 +879,11 @@ const onScreenShot = () => {
   border: 1px solid var(--border-color);
 
   .score {
-    font-weight: bold;
-    font-size: 20px;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
     margin: 0 20px;
     color: var(--text-primary);
+    letter-spacing: var(--letter-spacing-wide);
   }
 
   .team-item {
@@ -834,14 +893,16 @@ const onScreenShot = () => {
     align-items: center;
     flex: 1;
     color: var(--primary-color);
-    font-size: 16px;
-    font-weight: bold;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-tight);
 
     .rank {
       color: var(--text-muted);
-      font-size: 12px;
-      font-weight: normal;
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-normal);
       margin-top: 5px;
+      letter-spacing: var(--letter-spacing-normal);
     }
   }
 }
@@ -858,19 +919,21 @@ const onScreenShot = () => {
   border: 1px solid var(--border-color);
 
   .title {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
     color: var(--primary-color);
     margin-bottom: 10px;
+    letter-spacing: var(--letter-spacing-tight);
   }
 }
 
 .size-title {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   color: var(--warning-color);
   margin-top: 10px;
   display: block;
   padding: 0 12px;
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .flex-horizontal-1 {
@@ -919,21 +982,23 @@ const onScreenShot = () => {
 
 .infer-table th {
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   padding: 14px 12px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   text-align: center;
   border-bottom: 1px solid var(--border-color);
   white-space: nowrap;
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .infer-table td {
   color: var(--text-primary);
   padding: 12px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   text-align: center;
   border-bottom: 1px solid var(--border-color);
   vertical-align: top;
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .infer-table tr:last-child td {
@@ -1007,8 +1072,9 @@ const onScreenShot = () => {
   
   p {
     margin: 0 0 8px 0;
-    line-height: 1.6;
-    font-size: 14px;
+    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-sm);
+    letter-spacing: var(--letter-spacing-normal);
     
     &:last-child {
       margin-bottom: 0;

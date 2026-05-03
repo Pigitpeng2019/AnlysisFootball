@@ -3,46 +3,58 @@
 @tailwind utilities;
 
 :root:root {
-  font-family: 'Outfit', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  /* Font Stack - Inspired by comfy.org */
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-display: swap;
+  
+  /* Line Height & Weight */
   line-height: 1.5;
   font-weight: 400;
 
+  /* Color Scheme */
   color-scheme: dark;
-  color: #ffffff;
-  background-color: #0a0e14;
+  color: #f8fafc;
+  background-color: #0f0f14;
   box-sizing: border-box;
 
+  /* Font Optimization */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  -webkit-font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1, 'tnum' 1;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1, 'tnum' 1;
 
-  /* Color System */
-  --primary-color: #ff6500;
-  --primary-gradient: linear-gradient(135deg, #ff6500 0%, #ff8c42 100%);
-  --secondary-color: #00d4aa;
-  --danger-color: #ff4757;
-  --warning-color: #ffc107;
+  /* Color System - Inspired by comfy.org */
+  --primary-color: #8b5cf6;
+  --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
+  --secondary-color: #06b6d4;
+  --accent-color: #22c55e;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
   
   /* Background Colors */
-  --bg-primary: #0a0e14;
-  --bg-secondary: #141a23;
-  --bg-card: rgba(30, 38, 50, 0.85);
-  --bg-card-hover: rgba(40, 50, 65, 0.9);
+  --bg-primary: #0f0f14;
+  --bg-secondary: #16161d;
+  --bg-tertiary: #1e1e28;
+  --bg-card: rgba(30, 30, 42, 0.8);
+  --bg-card-hover: rgba(40, 40, 56, 0.9);
   
   /* Text Colors */
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --text-muted: #8b949e;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-disabled: #475569;
   
   /* Border Colors */
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(255, 101, 0, 0.3);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-glow: rgba(139, 92, 246, 0.3);
   
   /* Shadows */
-  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 20px rgba(255, 101, 0, 0.15);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.15);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.45);
   
   /* Spacing System (8pt Grid) */
   --space-1: 4px;
@@ -54,39 +66,64 @@
   --space-7: 64px;
   --space-8: 96px;
   
-  /* Typography */
+  /* Typography System - Inspired by comfy.org */
+  --font-sans: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  
+  /* Font Sizes (12px - 72px scale) */
+  --font-size-2xs: 10px;
   --font-size-xs: 12px;
   --font-size-sm: 14px;
   --font-size-base: 16px;
   --font-size-lg: 18px;
   --font-size-xl: 20px;
   --font-size-2xl: 24px;
-  --font-size-3xl: 32px;
-  --font-size-4xl: 48px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
+  --font-size-5xl: 48px;
+  --font-size-6xl: 60px;
+  --font-size-7xl: 72px;
   
+  /* Font Weights */
+  --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
   
+  /* Line Heights */
+  --line-height-none: 1;
   --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
   --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+  
+  /* Letter Spacing */
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
   
   /* Vant Components */
-  --van-primary-color: #ff6500;
-  --van-nav-bar-background: rgba(10, 14, 20, 0.95);
-  --van-nav-bar-title-text-color: white;
-  --van-nav-bar-icon-color: white !important;
-  --van-nav-bar-text-color: white !important;
-  --van-notice-bar-text-color: #ffffff;
-  --van-notice-bar-background: rgba(255, 101, 0, 0.15);
-  --van-tabbar-background: rgba(10, 14, 20, 0.95);
-  --van-tabbar-item-text-color: #9ca3af;
-  --van-cell-background: rgba(20, 26, 35, 0.95);
-  --van-cell-text-color: #e5e7eb;
-  --van-cell-group-title-color: #e5e7eb;
-  --van-cell-value-inside-color: #e5e7eb;
+  --van-primary-color: #8b5cf6;
+  --van-nav-bar-background: rgba(15, 15, 20, 0.92);
+  --van-nav-bar-title-text-color: #f8fafc;
+  --van-nav-bar-icon-color: #8b5cf6 !important;
+  --van-nav-bar-text-color: #94a3b8 !important;
+  --van-notice-bar-text-color: #f8fafc;
+  --van-notice-bar-background: rgba(139, 92, 246, 0.12);
+  --van-tabbar-background: rgba(15, 15, 20, 0.92);
+  --van-tabbar-item-text-color: #64748b;
+  --van-tabbar-item-active-color: #8b5cf6;
+  --van-cell-background: rgba(22, 22, 29, 0.9);
+  --van-cell-text-color: #f1f5f9;
+  --van-cell-group-title-color: #94a3b8;
+  --van-cell-value-inside-color: #94a3b8;
+  --van-popup-background: #16161d;
 }
 
 * {
@@ -108,8 +145,28 @@ body {
   align-items: stretch;
   min-height: 100vh;
   background: 
-    radial-gradient(ellipse at top, rgba(255, 101, 0, 0.03) 0%, transparent 50%),
-    linear-gradient(180deg, var(--bg-primary) 0%, #0d1117 100%);
+    radial-gradient(ellipse at 20% 10%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg-primary) 0%, #12121a 100%);
+}
+
+/* 内容容器 - 左右各留白5% */
+.content-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 5%;
+  box-sizing: border-box;
+}
+
+/* 卡片容器 - 统一卡片样式 */
+.card-container {
+  width: 100%;
+  max-width: 90%;
+  margin: 0 auto;
+  padding: 0 5%;
+  box-sizing: border-box;
 }
 
 .padding-tabbar {
@@ -156,6 +213,20 @@ a {
   }
   100% {
     background-position: calc(200px + 100%) 0;
+  }
+}
+
+@keyframes shimmerLine {
+  0% {
+    transform: translateX(-50%);
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(50%);
+    opacity: 0.3;
   }
 }
 

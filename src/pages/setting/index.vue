@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container padding-tabbar setting-page">
+  <div class="app-container setting-page">
     <div class="page-background"></div>
     
     <van-nav-bar title="⚙️ 设置" fixed class="nav-bar"/>
@@ -187,21 +187,62 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
 }
 
 .nav-bar {
-  background: rgba(10, 14, 20, 0.95) !important;
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-color);
-  
+  background: linear-gradient(135deg, rgba(15, 15, 22, 0.95) 0%, rgba(22, 22, 30, 0.92) 100%) !important;
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  box-shadow: 
+    0 4px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  border-bottom: none;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 200%;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(139, 92, 246, 0.4) 20%, 
+      rgba(99, 102, 241, 0.6) 50%, 
+      rgba(139, 92, 246, 0.4) 80%, 
+      transparent 100%);
+    animation: shimmerLine 3s ease-in-out infinite;
+  }
+
   :deep(.van-nav-bar__title) {
     color: var(--text-primary) !important;
-    font-weight: 600;
-    font-size: 18px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    letter-spacing: var(--letter-spacing-tight);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  :deep(.van-nav-bar__left),
+  :deep(.van-nav-bar__right) {
+    color: #a78bfa;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    
+    &:active {
+      opacity: 0.7;
+      transform: scale(0.95);
+    }
   }
 }
 
 .content-wrapper {
-  padding: 12px;
+  padding: 12px 5%;
   padding-top: 46px;
   animation: fadeInUp 0.6s ease-out;
+  width: 100%;
+  max-width: 90%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 @keyframes fadeInUp {
@@ -224,10 +265,10 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
   
   :deep(.van-cell-group__title) {
     color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 600;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: var(--letter-spacing-wide);
     padding: 12px 16px 8px;
     background: transparent;
   }
@@ -239,14 +280,17 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
   
   :deep(.van-cell__title) {
     color: var(--text-primary);
-    font-size: 15px;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--letter-spacing-normal);
   }
   
   :deep(.van-cell__label) {
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     margin-top: 4px;
-    line-height: 1.4;
+    line-height: var(--line-height-snug);
+    letter-spacing: var(--letter-spacing-normal);
   }
   
   :deep(.van-cell__right-icon) {
@@ -284,20 +328,22 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
 
 .feedback-text {
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .feedback-title {
   color: var(--text-primary);
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   margin-bottom: 12px;
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .analysis-text {
   margin-bottom: 12px;
-  line-height: 1.7;
+  line-height: var(--line-height-relaxed);
 }
 
 .update-text {
@@ -324,11 +370,12 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
   background: var(--primary-gradient);
   border-radius: 8px;
   color: white;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   text-decoration: none;
   transition: all 0.3s ease;
   margin-top: 8px;
+  letter-spacing: var(--letter-spacing-tight);
   
   &:active {
     transform: scale(0.98);
@@ -352,7 +399,8 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
 
 .version-text {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .company-popup {
@@ -372,8 +420,9 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
 
 .popup-title {
   color: var(--text-primary);
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .popup-close {
@@ -406,9 +455,10 @@ const onlyMainMatch = useLocalStorage("only_main_match", 0)
   
   :deep(.van-checkbox__label) {
     color: var(--text-primary);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     margin-left: 8px;
+    letter-spacing: var(--letter-spacing-normal);
   }
   
   :deep(.van-checkbox__icon--checked .van-icon) {

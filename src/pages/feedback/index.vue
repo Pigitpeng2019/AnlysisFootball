@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container padding-tabbar feedback-page">
+  <div class="app-container feedback-page">
     <div class="page-background"></div>
     
     <van-nav-bar title="💬 帮助反馈" fixed class="nav-bar" />
@@ -99,9 +99,13 @@ defineOptions({
 }
 
 .content-wrapper {
-  padding: 12px;
+  padding: 12px 5%;
   padding-top: 46px;
   animation: fadeInUp 0.6s ease-out;
+  width: 100%;
+  max-width: 90%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 @keyframes fadeInUp {
