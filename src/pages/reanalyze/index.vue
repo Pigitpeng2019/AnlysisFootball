@@ -194,7 +194,9 @@ const maxDate = computed(() => {
 const availableLeagues = computed(() => {
   const leagues = new Set<string>()
   matchList.value.forEach(match => {
-    if (match.match_category) {
+    if (match.match_group) {
+      leagues.add(match.match_group)
+    } else if (match.match_category) {
       leagues.add(match.match_category)
     }
   })
@@ -234,7 +236,8 @@ const filteredMatchList = computed(() => {
   // 按联赛类型筛选
   if (filterOptions.leagueTypes.length > 0) {
     result = result.filter(match => {
-      return filterOptions.leagueTypes.includes(match.match_category || "")
+      const league = match.match_group || match.match_category || ""
+      return filterOptions.leagueTypes.includes(league)
     })
   }
   
