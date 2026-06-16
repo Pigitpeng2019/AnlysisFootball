@@ -569,12 +569,16 @@ const generateMockPrediction = async (match: IMatchInfo, aiSettings?: IAISetting
   let poisson_big: number
   let poisson_small: number
   
-  if (match.poisson_big !== undefined) {
-    // 后端已计算，直接使用
+  // 检查后端返回的poisson_big是否有效（非0且在合理范围）
+  // 比赛列表数据中的poisson_big可能为0或无效值，需要重新计算
+  const isValidPoisson = match.poisson_big !== undefined && match.poisson_big > 0 && match.poisson_big < 100
+  
+  if (isValidPoisson) {
+    // 后端已计算且值有效，直接使用
     poisson_big = match.poisson_big
     poisson_small = match.poisson_small ?? (100 - match.poisson_big)
   } else {
-    // 使用本地高级模型计算
+    // 使用本地高级模型计算（覆盖无效值或空值）
     advancedPred = calculateAdvancedPrediction(match)
     poisson_big = advancedPred.poisson_big
     poisson_small = 100 - poisson_big
