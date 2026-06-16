@@ -576,7 +576,7 @@ const generateMockPrediction = async (match: IMatchInfo, aiSettings?: IAISetting
   } else {
     // 使用本地高级模型计算
     advancedPred = calculateAdvancedPrediction(match)
-    poisson_big = advancedPred.final_big
+    poisson_big = advancedPred.poisson_big
     poisson_small = 100 - poisson_big
   }
 
