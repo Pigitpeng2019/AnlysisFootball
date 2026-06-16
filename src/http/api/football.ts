@@ -262,21 +262,26 @@ function analyzeMatchImportance(match: IMatchInfo): MatchImportanceFactors {
   const round = parseInt(match.match_round || "1") || 1
   const totalRounds = leagueTotalRounds(match.match_group || "")
   const remainingRounds = totalRounds - round
+  const league = match.match_category || match.match_group || ""
   
-  // 保级/升级战（排名后4名）
-  const isPromotion = rank > teamCount - 4 || (rank <= 4 && rank >= teamCount - 3)
+  const majorTournaments = ["世界杯", "欧洲杯", "美洲杯", "亚洲杯", "非洲杯", "欧冠", "欧罗巴"]
+  const isMajorTournament = majorTournaments.includes(league)
   
-  // 争冠战（前三名）
-  const isTitleRace = rank <= 3 && remainingRounds <= 5
+  let isPromotion = false
+  let isTitleRace = false
+  let isEurope = false
+  let isDerby = false
+  let isLastMatchday = false
   
-  // 欧战资格（4-6名）
-  const isEurope = rank >= 4 && rank <= 6 && remainingRounds <= 8
-  
-  // 德比战（同一地区球队）
-  const isDerby = false // 需要额外的德比数据
-  
-  // 最后一轮
-  const isLastMatchday = remainingRounds <= 1
+  if (isMajorTournament) {
+    isTitleRace = true
+    isEurope = true
+  } else {
+    isPromotion = rank > teamCount - 4 || (rank <= 4 && rank >= teamCount - 3)
+    isTitleRace = rank <= 3 && remainingRounds <= 5
+    isEurope = rank >= 4 && rank <= 6 && remainingRounds <= 8
+    isLastMatchday = remainingRounds <= 1
+  }
   
   return { isPromotion, isTitleRace, isEurope, isDerby, isLastMatchday }
 }
@@ -500,6 +505,24 @@ export const analysisMatch = async (match: IMatchInfo) => {
     result.final_small_prob = 100 - advancedPred.final_big
   } catch (e) {
     console.warn("Advanced prediction calculation failed:", e)
+  }
+  
+  if (result.poisson_big !== undefined && result.poisson_big < 10) {
+    result.poisson_big = Math.round(result.poisson_big * 100)
+  }
+  if (result.poisson_small !== undefined && result.poisson_small < 10) {
+    result.poisson_small = Math.round(result.poisson_small * 100)
+  }
+  if (result.poisson_big_limit !== undefined && result.poisson_big_limit < 10) {
+    result.poisson_big_limit = Math.round(result.poisson_big_limit * 100)
+  }
+  if (result.poisson_small_limit !== undefined && result.poisson_small_limit < 10) {
+    result.poisson_small_limit = Math.round(result.poisson_small_limit * 100)
+  }
+  
+  if (result.importance_adj === undefined) {
+    const importance = analyzeMatchImportance(result)
+    result.importance_adj = calculateImportanceImpact(importance)
   }
   
   return result
