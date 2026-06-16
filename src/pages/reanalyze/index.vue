@@ -300,6 +300,18 @@ const onGetMatchByDate = async (refresh = true) => {
       const res = await getMatchesByDate(searchValue.matchDate, pagination)
       console.log("getMatchesByDate response:", res)
       matchList.value = refresh ? res.data : matchList.value.concat(res.data)
+      
+      if (matchList.value.length === 0 && refresh) {
+        console.log("No matches found for selected date, switching to all matches mode")
+        showAllMatches.value = true
+        const allRes = await getMatchList("all")
+        matchList.value = allRes
+        pagination.finished = true
+        showToast({
+          message: "当前日期无数据，已切换至全部比赛",
+          position: 'bottom',
+        })
+      }
     }
   } catch (error) {
     console.error("Failed to fetch matches:", error)
