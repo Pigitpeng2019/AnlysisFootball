@@ -45,13 +45,13 @@
           />
         </div>
         
-        <!-- 热门联赛快捷筛选 -->
+        <!-- 热门联赛快捷筛选（默认全选） -->
         <div class="quick-filter">
           <van-tag 
             v-for="league in HOT_LEAGUES" 
             :key="league"
-            :type="filterOptions.leagueTypes.includes(league) ? 'primary' : 'default'"
-            :class="{ active: filterOptions.leagueTypes.includes(league) }"
+            :type="isLeagueActive(league) ? 'primary' : 'default'"
+            :class="{ active: isLeagueActive(league) }"
             @click="toggleQuickLeague(league)"
           >
             {{ league }}
@@ -242,7 +242,7 @@ const activeFilterCount = computed(() => {
   return count
 })
 
-// 筛选后的比赛列表
+// 筛选后的比赛列表（默认只显示热门联赛）
 const filteredMatchList = computed(() => {
   let result = [...matchList.value]
   
@@ -256,13 +256,12 @@ const filteredMatchList = computed(() => {
     })
   }
   
-  // 按联赛类型筛选（与预测页面一致，使用match_category）
-  if (filterOptions.leagueTypes.length > 0) {
-    result = result.filter(match => {
-      const league = match.match_category || match.match_group || ""
-      return filterOptions.leagueTypes.includes(league)
-    })
-  }
+  // 默认只显示热门联赛，除非用户手动清空了筛选
+  const activeLeagues = filterOptions.leagueTypes.length > 0 ? filterOptions.leagueTypes : HOT_LEAGUES
+  result = result.filter(match => {
+    const league = match.match_category || match.match_group || ""
+    return activeLeagues.includes(league)
+  })
   
   // 按比赛状态筛选
   if (filterOptions.matchStatus.length > 0) {
@@ -346,6 +345,13 @@ const resetFilters = () => {
 
 const applyFilters = () => {
   showFilterPopup.value = false
+}
+
+const isLeagueActive = (league: string) => {
+  if (filterOptions.leagueTypes.length > 0) {
+    return filterOptions.leagueTypes.includes(league)
+  }
+  return HOT_LEAGUES.includes(league)
 }
 
 const toggleQuickLeague = (league: string) => {
