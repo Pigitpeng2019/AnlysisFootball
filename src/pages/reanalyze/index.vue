@@ -9,11 +9,18 @@
         <div class="date-info">
           <span class="date-icon">📅</span>
           <div class="date-text">
-            <div class="date-label">选择日期</div>
-            <div class="date-value">{{ searchValue.matchDate }}</div>
+            <div class="date-label">{{ showAllMatches ? '全部比赛' : '选择日期' }}</div>
+            <div class="date-value">{{ showAllMatches ? '不限日期' : searchValue.matchDate }}</div>
           </div>
         </div>
         <van-icon name="arrow" class="date-arrow"/>
+      </div>
+      <div 
+        class="all-matches-btn" 
+        :class="{ active: showAllMatches }"
+        @click="toggleShowAllMatches"
+      >
+        <span>全部比赛</span>
       </div>
     </van-sticky>
     
@@ -165,7 +172,7 @@
 import { computed, reactive, ref } from "vue"
 import dayjs from "dayjs"
 import _ from "lodash"
-import { getMatchesByDate } from "@/http/api/football.ts"
+import { getMatchesByDate, getMatchList } from "@/http/api/football.ts"
 import MatchItem from "@/pages/home/src/MatchItem.vue"
 import { IMatchInfo } from "@/models/match.ts"
 import { defaultPagination, IPaginationInfo } from "@/http/http.ts"
@@ -185,6 +192,7 @@ const pagination = reactive<IPaginationInfo>(_.cloneDeep(defaultPagination))
 const showDatePicker = ref(false)
 const showFilterPopup = ref(false)
 const matchList = ref<IMatchInfo[]>([])
+const showAllMatches = ref(false)
 
 // 筛选选项
 const filterOptions = reactive({
@@ -278,9 +286,21 @@ const onGetMatchByDate = (refresh = true) => {
   } else {
     pagination.pageNum++
   }
-  getMatchesByDate(searchValue.matchDate, pagination).then((res: any) => {
-    matchList.value = refresh ? res.data : matchList.value.concat(res.data)
-  })
+  
+  if (showAllMatches.value) {
+    getMatchList("all").then((res: IMatchInfo[]) => {
+      matchList.value = refresh ? res : matchList.value.concat(res)
+    })
+  } else {
+    getMatchesByDate(searchValue.matchDate, pagination).then((res: any) => {
+      matchList.value = refresh ? res.data : matchList.value.concat(res.data)
+    })
+  }
+}
+
+const toggleShowAllMatches = () => {
+  showAllMatches.value = !showAllMatches.value
+  onGetMatchByDate(true)
 }
 
 const onSearch = () => {
@@ -418,6 +438,9 @@ onGetMatchByDate()
 
 .sticky-date {
   z-index: 100;
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
 }
 
 .date-selector {
@@ -480,6 +503,42 @@ onGetMatchByDate()
 
 .date-selector:active .date-arrow {
   transform: translateX(4px);
+}
+
+.all-matches-btn {
+  background: rgba(22, 22, 29, 0.7);
+  backdrop-filter: blur(16px);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  border-radius: 14px;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+
+  span {
+    color: #94a3b8;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%);
+    border-color: rgba(139, 92, 246, 0.5);
+
+    span {
+      color: #a78bfa;
+    }
+  }
+
+  &:active {
+    background: rgba(30, 30, 42, 0.95);
+    transform: scale(0.99);
+    border-color: rgba(139, 92, 246, 0.25);
+  }
 }
 
 .content-wrapper {
