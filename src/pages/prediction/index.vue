@@ -101,11 +101,16 @@
             <span class="input-icon">🔮</span>
           </div>
           <h2 class="input-title">FID 预测</h2>
-          <p class="input-desc">输入 500.com 比赛 FID，快速获取大小球和大小黄牌预测</p>
+          <p class="input-desc">输入 500.com 或 titan007 比赛 FID/URL，快速获取大小球和大小黄牌预测</p>
 
           <van-form @submit="onPredict">
             <div class="fid-input-wrapper">
-              <van-field v-model="fid" name="fid" placeholder="请输入比赛FID" class="fid-field" clearable />
+              <van-field v-model="fid" name="fid" placeholder="请输入FID或粘贴URL" class="fid-field" clearable />
+            </div>
+            <div class="fid-hint">
+              <div class="hint-item">支持格式：</div>
+              <div class="hint-item">• 500.com: <code>https://trade.500.com/jczq/index.php?play=1&fid=xxxxx</code></div>
+              <div class="hint-item">• titan007: <code>https://live.titan007.com/xxxx/fid.htm</code> 或直接输入FID</div>
             </div>
             <van-button type="primary" block class="predict-btn" native-type="submit">
               <span>开始预测</span>
@@ -454,8 +459,62 @@ const onSelectType = (type: number) => {
   }
 }
 
-// --- FID ---
+// --- FID 解析函数 ---
 const fid = ref("")
+
+/**
+ * 从不同网站的URL中解析FID
+ * 支持格式：
+ * 1. 500.com: https://trade.500.com/jczq/index.php?play=1&fid=xxxxx
+ * 2. titan007: https://live.titan007.com/xxxx/fid.htm 或 https://live.titan007.com/xxxx/fid_xxxx.htm
+ * 3. 直接输入纯数字FID
+ */
+const parseFid = (input: string): string => {
+  if (!input.trim()) return ""
+  
+  // 如果是直接输入的纯数字FID，直接返回
+  if (/^\d+$/.test(input.trim())) {
+    return input.trim()
+  }
+  
+  // 尝试解析URL
+  try {
+    // 500.com 格式: https://trade.500.com/jczq/index.php?play=1&fid=xxxxx
+    const match500 = input.match(/fid=(\d+)/i)
+    if (match500) {
+      return match500[1]
+    }
+    
+    // titan007 格式: https://live.titan007.com/xxxx/fid.htm 或 fid_xxxx.htm
+    const matchTitan007 = input.match(/fid[_-]?(\d+)\.htm/i)
+    if (matchTitan007) {
+      return matchTitan007[1]
+    }
+    
+    // titan007 另一种格式: https://live.titan007.com/xxxx/xxxx.htm (文件名可能就是FID)
+    const matchTitan007Alt = input.match(/\/(\d+)\.htm/i)
+    if (matchTitan007Alt) {
+      return matchTitan007Alt[1]
+    }
+    
+    // titan007 格式: https://live.titan007.com/match/xxxxx.htm
+    const matchTitan007Match = input.match(/titan007\.com\/[^/]+\/(\d+)\.htm/i)
+    if (matchTitan007Match) {
+      return matchTitan007Match[1]
+    }
+    
+    // titan007 格式: https://live.titan007.com/xxxx/
+    const matchTitan007Dir = input.match(/titan007\.com\/(\d+)/i)
+    if (matchTitan007Dir) {
+      return matchTitan007Dir[1]
+    }
+  } catch {
+    // 解析失败，返回原始输入
+  }
+  
+  // 如果都解析不了，返回原始输入（让后端处理）
+  return input.trim()
+}
 
 // --- 状态 ---
 const loading = ref(false)
@@ -582,8 +641,9 @@ const renderCardChart = () => {
 
 // --- 预测 ---
 const doPredict = async (fidValue: string, matchInfo?: IMatchInfo) => {
-  if (!fidValue.trim()) {
-    errorMessage.value = "请输入比赛FID"
+  const parsedFid = parseFid(fidValue)
+  if (!parsedFid) {
+    errorMessage.value = "请输入有效的比赛FID或URL"
     error.value = true
     return
   }
@@ -599,7 +659,7 @@ const doPredict = async (fidValue: string, matchInfo?: IMatchInfo) => {
   })
 
   try {
-    const result = await getPrediction(fidValue.trim(), aiSettings.value.enabled ? aiSettings.value : undefined, matchInfo)
+    const result = await getPrediction(parsedFid, aiSettings.value.enabled ? aiSettings.value : undefined, matchInfo)
     predictionResult.value = result
     closeToast()
 
@@ -1161,6 +1221,38 @@ onMounted(() => {
     font-size: 15px;
     &::placeholder {
       color: #64748b;
+    }
+  }
+}
+
+.fid-hint {
+  text-align: left;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(139, 92, 246, 0.08);
+  border-radius: 10px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  
+  .hint-item {
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.6;
+    margin-bottom: 4px;
+    
+    &:first-child {
+      color: #a78bfa;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 10px;
+      color: #c4b5fd;
+      word-break: break-all;
     }
   }
 }
