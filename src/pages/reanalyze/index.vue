@@ -38,6 +38,19 @@
           />
         </div>
         
+        <!-- 热门联赛快捷筛选 -->
+        <div class="quick-filter">
+          <van-tag 
+            v-for="league in HOT_LEAGUES" 
+            :key="league"
+            :type="filterOptions.leagueTypes.includes(league) ? 'primary' : 'default'"
+            :class="{ active: filterOptions.leagueTypes.includes(league) }"
+            @click="toggleQuickLeague(league)"
+          >
+            {{ league }}
+          </van-tag>
+        </div>
+        
         <!-- 筛选按钮 -->
         <div class="filter-btn" @click="showFilterPopup=true">
           <van-icon name="filter" class="filter-icon"/>
@@ -160,6 +173,8 @@ import { defaultPagination, IPaginationInfo } from "@/http/http.ts"
 defineOptions({
   name: "Reanalyze"
 })
+
+const HOT_LEAGUES = ["英超", "西甲", "意甲", "德甲", "法甲", "世界杯", "欧洲杯", "欧冠"]
 
 const searchValue = reactive({
   matchDate: dayjs().subtract(1, "day").format("YYYY-MM-DD"),
@@ -284,6 +299,15 @@ const resetFilters = () => {
 
 const applyFilters = () => {
   showFilterPopup.value = false
+}
+
+const toggleQuickLeague = (league: string) => {
+  const index = filterOptions.leagueTypes.indexOf(league)
+  if (index > -1) {
+    filterOptions.leagueTypes.splice(index, 1)
+  } else {
+    filterOptions.leagueTypes.push(league)
+  }
 }
 
 onGetMatchByDate()
@@ -592,10 +616,17 @@ onGetMatchByDate()
   backdrop-filter: blur(16px);
   padding: 12px 16px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.quick-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .search-box {
@@ -783,6 +814,28 @@ onGetMatchByDate()
       transform: scale(0.98);
       box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
     }
+  }
+}
+
+/* 热门联赛快捷筛选标签样式 */
+.quick-filter :deep(.van-tag) {
+  background: rgba(40, 40, 56, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%);
+    border-color: rgba(139, 92, 246, 0.5);
+    color: #a78bfa;
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 </style>
