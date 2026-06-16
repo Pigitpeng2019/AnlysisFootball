@@ -213,14 +213,14 @@ const maxDate = computed(() => {
   return dayjs().toDate()
 })
 
-// 获取可用的联赛类型
+// 获取可用的联赛类型（与预测页面一致，使用match_category）
 const availableLeagues = computed(() => {
   const leagues = new Set<string>()
   matchList.value.forEach(match => {
-    if (match.match_group) {
-      leagues.add(match.match_group)
-    } else if (match.match_category) {
+    if (match.match_category) {
       leagues.add(match.match_category)
+    } else if (match.match_group) {
+      leagues.add(match.match_group)
     }
   })
   return Array.from(leagues)
@@ -256,10 +256,10 @@ const filteredMatchList = computed(() => {
     })
   }
   
-  // 按联赛类型筛选
+  // 按联赛类型筛选（与预测页面一致，使用match_category）
   if (filterOptions.leagueTypes.length > 0) {
     result = result.filter(match => {
-      const league = match.match_group || match.match_category || ""
+      const league = match.match_category || match.match_group || ""
       return filterOptions.leagueTypes.includes(league)
     })
   }
@@ -280,21 +280,36 @@ const onConfirmDate = ({ selectedValues }: { selectedValues: string[] }) => {
   onGetMatchByDate(true)
 }
 
-const onGetMatchByDate = (refresh = true) => {
+const onGetMatchByDate = async (refresh = true) => {
   if (refresh) {
     pagination.pageNum = 1
+    pagination.refreshing = true
   } else {
     pagination.pageNum++
+    pagination.loading = true
   }
   
-  if (showAllMatches.value) {
-    getMatchList("all").then((res: IMatchInfo[]) => {
+  try {
+    if (showAllMatches.value) {
+      const res = await getMatchList("all")
+      console.log("getMatchList response:", res)
+      console.log("getMatchList response length:", res ? res.length : 0)
       matchList.value = refresh ? res : matchList.value.concat(res)
-    })
-  } else {
-    getMatchesByDate(searchValue.matchDate, pagination).then((res: any) => {
+      pagination.finished = true
+    } else {
+      const res = await getMatchesByDate(searchValue.matchDate, pagination)
+      console.log("getMatchesByDate response:", res)
       matchList.value = refresh ? res.data : matchList.value.concat(res.data)
+    }
+  } catch (error) {
+    console.error("Failed to fetch matches:", error)
+    showToast({
+      message: "获取比赛数据失败",
+      position: 'bottom',
     })
+  } finally {
+    pagination.refreshing = false
+    pagination.loading = false
   }
 }
 
@@ -327,6 +342,11 @@ const toggleQuickLeague = (league: string) => {
     filterOptions.leagueTypes.splice(index, 1)
   } else {
     filterOptions.leagueTypes.push(league)
+  }
+  
+  if (filterOptions.leagueTypes.length > 0 && matchList.value.length === 0 && !showAllMatches.value) {
+    showAllMatches.value = true
+    onGetMatchByDate(true)
   }
 }
 
