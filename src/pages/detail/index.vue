@@ -490,13 +490,7 @@ const onGetMatchInfo = async () => {
     getMatchInfo(fid as string).then((res: IMatchInfo) => {
       matchStore.match = res
       addHistoryMatch(res)
-      if (res.is_redis) {
-        closeToast()
-        isLoading.value = false
-        operateMatchData()
-      } else {
-        onAnalysisMatch()
-      }
+      onAnalysisMatch()
     }).catch(err => {
       if (err.code === 403) {
         localStorage.removeItem("code")
