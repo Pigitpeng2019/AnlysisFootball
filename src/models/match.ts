@@ -77,6 +77,17 @@ export interface IMatchInfo {
   poisson_big?: number;
   poisson_small_limit?: number;
   poisson_big_limit?: number;
+  
+  nb_big?: number;
+  nb_small?: number;
+  xg_big?: number;
+  xg_small?: number;
+  importance_adj?: number;
+  pan_adj?: number;
+  prediction_method?: string;
+  final_big_prob?: number;
+  final_small_prob?: number;
+  
   home_status?: number[];
   visit_status?: number[];
   home_total_goal?: number[];

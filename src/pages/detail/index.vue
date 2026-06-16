@@ -220,6 +220,68 @@
           </tr>
           </tbody>
         </table>
+        
+        <div v-if="matchStore.match.final_big_prob !== undefined" class="panel advanced-analysis-panel">
+          <div class="title">
+            📊 综合预测分析
+            <span class="method-tag">{{ matchStore.match.prediction_method }}</span>
+          </div>
+          
+          <div class="advanced-summary">
+            <div class="summary-item">
+              <span class="summary-label">综合大球概率</span>
+              <span class="summary-value big">{{ matchStore.match.final_big_prob }}%</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">综合小球概率</span>
+              <span class="summary-value small">{{ matchStore.match.final_small_prob }}%</span>
+            </div>
+          </div>
+          
+          <div class="model-comparison">
+            <div class="comparison-title">各模型预测对比</div>
+            <div class="comparison-grid">
+              <div class="comparison-item">
+                <span class="item-icon">📈</span>
+                <span class="item-name">泊松分布</span>
+                <span class="item-value">{{ matchStore.match.poisson_big }}%</span>
+              </div>
+              <div class="comparison-item">
+                <span class="item-icon">📉</span>
+                <span class="item-name">负二项分布</span>
+                <span class="item-value">{{ matchStore.match.nb_big }}%</span>
+              </div>
+              <div class="comparison-item">
+                <span class="item-icon">🎯</span>
+                <span class="item-name">xG期望进球</span>
+                <span class="item-value">{{ matchStore.match.xg_big }}%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="adjustment-section">
+            <div class="adjustment-title">调整因子</div>
+            <div class="adjustment-grid">
+              <div class="adjustment-item" v-if="matchStore.match.importance_adj !== undefined">
+                <span class="adjustment-label">比赛重要性</span>
+                <span class="adjustment-value" :class="matchStore.match.importance_adj >= 0 ? 'positive' : 'negative'">
+                  {{ matchStore.match.importance_adj >= 0 ? '+' : '' }}{{ matchStore.match.importance_adj }}%
+                </span>
+              </div>
+              <div class="adjustment-item" v-if="matchStore.match.pan_adj !== undefined">
+                <span class="adjustment-label">盘口调整</span>
+                <span class="adjustment-value" :class="matchStore.match.pan_adj >= 0 ? 'positive' : 'negative'">
+                  {{ matchStore.match.pan_adj >= 0 ? '+' : '' }}{{ matchStore.match.pan_adj }}%
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="formula-box">
+            <span>综合概率 = 泊松×40% + 负二项×30% + xG×30% + 调整项</span>
+          </div>
+        </div>
+        
         <div class="panel" v-if="showSizeAll">
           <div class="title">
             大小球全网匹配结果：
@@ -1205,5 +1267,182 @@ const onScreenShot = () => {
 
 :deep(.van-button) {
   border-radius: 8px;
+}
+
+/* ============ 综合预测分析面板 ============ */
+.advanced-analysis-panel {
+  background: linear-gradient(135deg, rgba(30, 30, 42, 0.95) 0%, rgba(22, 22, 30, 0.9) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 16px 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(ellipse at 80% 0%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+}
+
+.advanced-analysis-panel .title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.method-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.15);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.advanced-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px;
+  background: rgba(15, 15, 22, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 700;
+
+  &.big {
+    color: #ef4444;
+  }
+
+  &.small {
+    color: #22c55e;
+  }
+}
+
+.model-comparison {
+  margin-bottom: 16px;
+}
+
+.comparison-title {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.comparison-grid {
+  display: flex;
+  gap: 10px;
+}
+
+.comparison-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  background: rgba(30, 30, 42, 0.6);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.item-icon {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.item-name {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.item-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.adjustment-section {
+  margin-bottom: 16px;
+}
+
+.adjustment-title {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.adjustment-grid {
+  display: flex;
+  gap: 10px;
+}
+
+.adjustment-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: rgba(15, 15, 22, 0.6);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.adjustment-label {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.adjustment-value {
+  font-size: 14px;
+  font-weight: 600;
+
+  &.positive {
+    color: #22c55e;
+  }
+
+  &.negative {
+    color: #ef4444;
+  }
+}
+
+.formula-box {
+  padding: 12px 14px;
+  background: rgba(139, 92, 246, 0.08);
+  border-radius: 10px;
+  border-left: 3px solid rgba(139, 92, 246, 0.5);
+
+  span {
+    font-size: 11px;
+    color: #c4b5fd;
+    line-height: 1.5;
+  }
 }
 </style>

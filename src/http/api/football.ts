@@ -470,7 +470,7 @@ export const getMatchInfo = (fid: string) => {
   return http1.get<IMatchInfo>(`/analysis/info`, { fid })
 }
 
-export const analysisMatch = (match: IMatchInfo) => {
+export const analysisMatch = async (match: IMatchInfo) => {
   match.europe_companies = (JSON.parse(localStorage.getItem("check_europe") ?? "[]"))
   match.asia_companies = (JSON.parse(localStorage.getItem("check_asia") ?? "[]"))
   match.size_companies = (JSON.parse(localStorage.getItem("check_size") ?? "[]"))
@@ -482,7 +482,22 @@ export const analysisMatch = (match: IMatchInfo) => {
   match.asia_filter_odds = localStorage.getItem("asia_filter_odds") == "0" ? 0 : 1
   match.size_filter_odds = localStorage.getItem("size_filter_odds") == "0" ? 0 : 1
   match.only_main_match = localStorage.getItem("only_main_match") == "1" ? 1 : 0
-  return http1.post<IMatchInfo>("/analysis/all", match)
+  
+  const result = await http1.post<IMatchInfo>("/analysis/all", match)
+  
+  const advancedPred = calculateAdvancedPrediction(result)
+  
+  result.nb_big = advancedPred.nb_big
+  result.nb_small = 100 - advancedPred.nb_big
+  result.xg_big = advancedPred.xg_big
+  result.xg_small = 100 - advancedPred.xg_big
+  result.importance_adj = advancedPred.importance_adj
+  result.pan_adj = advancedPred.pan_adj
+  result.prediction_method = advancedPred.method
+  result.final_big_prob = advancedPred.final_big
+  result.final_small_prob = 100 - advancedPred.final_big
+  
+  return result
 }
 
 export const getMatchesByDate = (date: string, pagination: IPaginationInfo) => {
