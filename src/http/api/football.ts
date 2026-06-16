@@ -5,6 +5,139 @@ import { IMatchInfo } from "@/models/match.ts"
 import { IPredictionResponse, ISizePrediction, ICardPrediction, ISimilarMatch, IAIAnalysis } from "@/models/prediction.ts"
 import { API_URL } from "@/config.ts"
 
+// ============================================
+// 泊松分布计算工具函数
+// ============================================
+
+/**
+ * 计算阶乘 (使用对数避免溢出)
+ */
+function logFactorial(n: number): number {
+  if (n <= 1) return 0
+  let result = 0
+  for (let i = 2; i <= n; i++) {
+    result += Math.log(i)
+  }
+  return result
+}
+
+/**
+ * 泊松概率质量函数
+ * P(X = k) = λ^k * e^(-λ) / k!
+ * 
+ * 使用对数计算避免大数溢出
+ */
+function poissonPMF(lambda: number, k: number): number {
+  if (lambda < 0 || k < 0) return 0
+  if (k === 0) return Math.exp(-lambda)
+  
+  // log(P) = k*log(λ) - λ - log(k!)
+  const logP = k * Math.log(lambda) - lambda - logFactorial(k)
+  return Math.exp(logP)
+}
+
+/**
+ * 计算累积泊松概率
+ * P(X <= k) 或 P(X >= k)
+ */
+function poissonCumulative(lambda: number, maxGoals: number): number {
+  let prob = 0
+  for (let k = 0; k <= maxGoals; k++) {
+    prob += poissonPMF(lambda, k)
+  }
+  return prob
+}
+
+/**
+ * 使用泊松分布计算大小球概率
+ * 
+ * @param homeAvgGoals 主队场均进球
+ * @param awayAvgGoals 客队场均进球  
+ * @param line 盘口线（如2.5）
+ * @param homeAdvantage 主场优势（默认0.25）
+ * @returns 大球概率百分比
+ */
+function calculatePoissonBigProbability(
+  homeAvgGoals: number,
+  awayAvgGoals: number,
+  line: number,
+  homeAdvantage: number = 0.25
+): number {
+  // 考虑主场优势计算期望进球数
+  const lambdaHome = homeAvgGoals + homeAdvantage
+  const lambdaAway = awayAvgGoals
+  const totalLambda = lambdaHome + lambdaAway
+  
+  // 计算大球概率（进球数 > 盘口线）
+  // 大球 = 盘口线向上取整及以上的所有情况
+  const minBigGoal = Math.floor(line) + 1
+  
+  let bigProb = 0
+  for (let goals = minBigGoal; goals <= 15; goals++) {
+    bigProb += poissonPMF(totalLambda, goals)
+  }
+  
+  // 处理整数盘口的走盘情况
+  // 例如盘口2.0，有概率进2球（走盘）
+  if (line === Math.floor(line)) {
+    // 整数盘口：走盘概率在大小球之间分配
+    const pushProb = poissonPMF(totalLambda, line)
+    // 通常走盘概率平分给大小球
+    const pushToBig = pushProb * 0.5
+    bigProb = bigProb - pushToBig
+  }
+  
+  // 限制在合理范围
+  return Math.max(5, Math.min(95, Math.round(bigProb * 1000) / 10))
+}
+
+/**
+ * 基于比赛数据计算泊松大小球概率
+ */
+function calculateSizeFromMatch(match: IMatchInfo): { poisson_big: number; poisson_small: number } {
+  // 尝试从 match 对象获取数据
+  // home_total_goal 和 visit_total_goal 是进球数数组
+  
+  const homeGoals = match.home_total_goal || []
+  const visitGoals = match.visit_total_goal || []
+  
+  // 计算场均进球
+  const calcAvg = (arr: number[]) => {
+    if (arr.length === 0) return 1.5
+    const sum = arr.reduce((a, b) => a + b, 0)
+    return sum / arr.length
+  }
+  
+  let homeAvg = calcAvg(homeGoals)
+  let awayAvg = calcAvg(visitGoals)
+  
+  // 如果没有详细数据，尝试从其他字段估算
+  if (homeGoals.length === 0) {
+    // 使用历史统计数据估算
+    const totalAll = (match.size_big_all ?? 0) + (match.size_run_all ?? 0) + (match.size_small_all ?? 0)
+    if (totalAll > 0) {
+      // 大球率反推平均进球（简化估算）
+      const bigRate = (match.size_big_all ?? 0) / totalAll
+      // 假设平均进球约2.5-3球
+      homeAvg = 1.2 + (bigRate * 1.5)
+      awayAvg = 1.0 + (bigRate * 1.0)
+    } else {
+      // 默认值
+      homeAvg = 1.4
+      awayAvg = 1.1
+    }
+  }
+  
+  // 获取盘口线
+  const line = match.instant_size_most ?? match.origin_size_most ?? 2.5
+  
+  // 计算泊松概率
+  const poisson_big = calculatePoissonBigProbability(homeAvg, awayAvg, line)
+  const poisson_small = 100 - poisson_big
+  
+  return { poisson_big, poisson_small }
+}
+
 export const getGithubToken = (code?: string) => {
   return http1.get<any>("/football/callback", {
     code,
@@ -110,13 +243,19 @@ export const reanalyzeCard = async (match: IMatchInfo, cardPred: ICardPrediction
 const generateMockPrediction = async (match: IMatchInfo, aiSettings?: IAISettings): Promise<IPredictionResponse> => {
   const line = match.instant_size_most ?? match.origin_size_most ?? 2.5
 
-  const poisson_big = match.poisson_big ?? Math.floor(30 + Math.random() * 35)
-  const poisson_small = 100 - poisson_big
+  // 使用正确的泊松分布计算（优先使用后端返回的数据，否则本地计算）
+  const poissonCalc = match.poisson_big !== undefined 
+    ? { poisson_big: match.poisson_big, poisson_small: match.poisson_small ?? (100 - match.poisson_big) }
+    : calculateSizeFromMatch(match)
+  
+  const poisson_big = poissonCalc.poisson_big
+  const poisson_small = poissonCalc.poisson_small
 
   const totalAll = (match.size_big_all ?? 0) + (match.size_run_all ?? 0) + (match.size_small_all ?? 0)
   const histBig = totalAll > 0 ? Math.round((match.size_big_all ?? 0) / totalAll * 1000) / 10 : Math.floor(40 + Math.random() * 30)
   const histSmall = totalAll > 0 ? Math.round((match.size_small_all ?? 0) / totalAll * 1000) / 10 : 100 - histBig
 
+  // 综合历史数据和泊松分布计算（历史数据优先，泊松作为补充）
   const bigProb = totalAll > 0 ? histBig : poisson_big
 
   // 决赛小球加成：决赛比赛谨慎保守，小球概率增加
