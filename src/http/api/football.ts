@@ -196,7 +196,8 @@ interface XGFactors {
  * 计算xG调整因子
  */
 function calculateXGAdjustments(match: IMatchInfo, isHome: boolean): XGFactors {
-  const rank = isHome ? parseInt(match.home_team_rank || "10") : parseInt(match.visit_team_rank || "10")
+  const rawRank = isHome ? match.home_team_rank : match.visit_team_rank
+  const rank = parseInt(rawRank || "10") || 10
   const teamCount = match.team_count || 20
   
   // 基础进球率（根据排名调整）
@@ -256,9 +257,9 @@ interface MatchImportanceFactors {
  * 判断比赛重要性
  */
 function analyzeMatchImportance(match: IMatchInfo): MatchImportanceFactors {
-  const rank = parseInt(match.home_team_rank || "10")
+  const rank = parseInt(match.home_team_rank || "10") || 10
   const teamCount = match.team_count || 20
-  const round = parseInt(match.match_round || "1")
+  const round = parseInt(match.match_round || "1") || 1
   const totalRounds = leagueTotalRounds(match.match_group || "")
   const remainingRounds = totalRounds - round
   
@@ -485,17 +486,21 @@ export const analysisMatch = async (match: IMatchInfo) => {
   
   const result = await http1.post<IMatchInfo>("/analysis/all", match)
   
-  const advancedPred = calculateAdvancedPrediction(result)
-  
-  result.nb_big = advancedPred.nb_big
-  result.nb_small = 100 - advancedPred.nb_big
-  result.xg_big = advancedPred.xg_big
-  result.xg_small = 100 - advancedPred.xg_big
-  result.importance_adj = advancedPred.importance_adj
-  result.pan_adj = advancedPred.pan_adj
-  result.prediction_method = advancedPred.method
-  result.final_big_prob = advancedPred.final_big
-  result.final_small_prob = 100 - advancedPred.final_big
+  try {
+    const advancedPred = calculateAdvancedPrediction(result)
+    
+    result.nb_big = advancedPred.nb_big
+    result.nb_small = 100 - advancedPred.nb_big
+    result.xg_big = advancedPred.xg_big
+    result.xg_small = 100 - advancedPred.xg_big
+    result.importance_adj = advancedPred.importance_adj
+    result.pan_adj = advancedPred.pan_adj
+    result.prediction_method = advancedPred.method
+    result.final_big_prob = advancedPred.final_big
+    result.final_small_prob = 100 - advancedPred.final_big
+  } catch (e) {
+    console.warn("Advanced prediction calculation failed:", e)
+  }
   
   return result
 }
