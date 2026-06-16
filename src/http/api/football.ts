@@ -689,6 +689,12 @@ const generateMockPrediction = async (match: IMatchInfo, aiSettings?: IAISetting
     recommendation: sizeRec,
     confidence: sizeConf,
     final_boost: finalBoost > 0 ? finalBoost : undefined,
+    // 综合预测详情
+    nb_big: advancedPred?.nb_big,
+    xg_big: advancedPred?.xg_big,
+    importance_adj: advancedPred?.importance_adj,
+    pan_adj: advancedPred?.pan_adj,
+    prediction_method: advancedPred?.method,
   }
 
   const cardPred: ICardPrediction = {

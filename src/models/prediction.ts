@@ -11,6 +11,18 @@ export interface ISizePrediction {
   confidence: number
   /** 决赛小球加成: 决赛比赛小球概率的额外上调幅度 */
   final_boost?: number
+  
+  /** 综合预测详情 */
+  /** 负二项分布大球概率 */
+  nb_big?: number
+  /** xG模型大球概率 */
+  xg_big?: number
+  /** 比赛重要性调整值 */
+  importance_adj?: number
+  /** 盘口调整值 */
+  pan_adj?: number
+  /** 预测方法说明 */
+  prediction_method?: string
 }
 
 export interface ICardPrediction {

@@ -214,6 +214,51 @@
             </div>
           </div>
 
+          <!-- 综合预测详情 -->
+          <div class="advanced-prediction-section" v-if="predictionResult.size.nb_big !== undefined">
+            <div class="section-header" @click="showAdvancedDetails = !showAdvancedDetails">
+              <span class="section-icon">📊</span>
+              <span class="section-title">综合预测详情</span>
+              <span class="section-toggle">{{ showAdvancedDetails ? "收起" : "展开" }}</span>
+              <van-icon name="arrow" :class="{ expanded: showAdvancedDetails }" />
+            </div>
+            <div class="section-content" v-show="showAdvancedDetails">
+              <div class="prediction-method">
+                <span class="method-label">预测方法</span>
+                <span class="method-value">{{ predictionResult.size.prediction_method }}</span>
+              </div>
+              <div class="method-grid">
+                <div class="method-item">
+                  <span class="method-icon">📈</span>
+                  <span class="method-name">负二项分布</span>
+                  <span class="method-result">{{ predictionResult.size.nb_big }}%</span>
+                </div>
+                <div class="method-item">
+                  <span class="method-icon">🎯</span>
+                  <span class="method-name">xG期望进球</span>
+                  <span class="method-result">{{ predictionResult.size.xg_big }}%</span>
+                </div>
+              </div>
+              <div class="adjustment-grid">
+                <div class="adjustment-item" v-if="predictionResult.size.importance_adj !== undefined">
+                  <span class="adjustment-label">比赛重要性调整</span>
+                  <span class="adjustment-value" :class="predictionResult.size.importance_adj >= 0 ? 'positive' : 'negative'">
+                    {{ predictionResult.size.importance_adj >= 0 ? '+' : '' }}{{ predictionResult.size.importance_adj }}%
+                  </span>
+                </div>
+                <div class="adjustment-item" v-if="predictionResult.size.pan_adj !== undefined">
+                  <span class="adjustment-label">盘口调整</span>
+                  <span class="adjustment-value" :class="predictionResult.size.pan_adj >= 0 ? 'positive' : 'negative'">
+                    {{ predictionResult.size.pan_adj >= 0 ? '+' : '' }}{{ predictionResult.size.pan_adj }}%
+                  </span>
+                </div>
+              </div>
+              <div class="formula-hint">
+                <span>综合概率 = 泊松×40% + 负二项×30% + xG×30% + 调整项</span>
+              </div>
+            </div>
+          </div>
+
           <div class="prediction-chart" ref="sizeChartRef"></div>
 
           <div class="recommendation" :class="predictionResult.size.recommendation === '大球' ? 'rec-big' : 'rec-small'">
@@ -401,10 +446,12 @@ defineOptions({
 
 // --- 模式 ---
 const mode = ref<"list" | "fid">("list")
+const showAdvancedDetails = ref(false)
 const switchMode = (m: "list" | "fid") => {
   mode.value = m
   error.value = false
   errorMessage.value = ""
+  showAdvancedDetails.value = false
 }
 
 // --- 比赛列表 ---
@@ -1891,5 +1938,168 @@ onMounted(() => {
   color: #64748b;
   font-size: 18px;
   padding: 4px;
+}
+
+/* ============ 综合预测详情 ============ */
+.advanced-prediction-section {
+  margin-top: 16px;
+  background: rgba(15, 15, 22, 0.5);
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+.section-icon {
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.section-toggle {
+  font-size: 12px;
+  color: #64748b;
+  margin-right: 4px;
+}
+
+:deep(.van-icon.arrow) {
+  font-size: 14px;
+  color: #64748b;
+  transition: transform 0.3s ease;
+
+  &.expanded {
+    transform: rotate(180deg);
+  }
+}
+
+.section-content {
+  padding: 0 16px 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.prediction-method {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: rgba(139, 92, 246, 0.08);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(139, 92, 246, 0.12);
+}
+
+.method-label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.method-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.method-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.method-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(30, 30, 42, 0.6);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.method-icon {
+  font-size: 15px;
+}
+
+.method-name {
+  flex: 1;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.method-result {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.adjustment-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.adjustment-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(15, 15, 22, 0.6);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.adjustment-label {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.adjustment-value {
+  font-size: 14px;
+  font-weight: 600;
+
+  &.positive {
+    color: #22c55e;
+  }
+
+  &.negative {
+    color: #ef4444;
+  }
+}
+
+.formula-hint {
+  padding: 10px 14px;
+  background: rgba(15, 15, 22, 0.8);
+  border-radius: 8px;
+  border-left: 3px solid rgba(139, 92, 246, 0.5);
+}
+
+.formula-hint span {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.5;
 }
 </style>
