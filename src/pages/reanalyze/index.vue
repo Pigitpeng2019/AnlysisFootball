@@ -121,12 +121,12 @@
         <van-icon name="cross" class="popup-close" @click="showFilterPopup=false"/>
       </div>
       <div class="filter-content">
-        <!-- 联赛类型筛选 -->
+        <!-- 热门赛事筛选 -->
         <div class="filter-section">
-          <div class="filter-section-title">联赛类型</div>
+          <div class="filter-section-title">热门赛事</div>
           <van-checkbox-group v-model="filterOptions.leagueTypes" direction="horizontal">
             <van-checkbox 
-              v-for="league in availableLeagues" 
+              v-for="league in HOT_LEAGUES" 
               :key="league" 
               :name="league"
               :icon-size="20"
@@ -194,9 +194,9 @@ const showFilterPopup = ref(false)
 const matchList = ref<IMatchInfo[]>([])
 const showAllMatches = ref(false)
 
-// 筛选选项
+// 筛选选项（默认选中所有热门联赛）
 const filterOptions = reactive({
-  leagueTypes: [] as string[],
+  leagueTypes: [...HOT_LEAGUES] as string[],
   matchStatus: [] as string[]
 })
 
@@ -338,7 +338,7 @@ const clearSearch = () => {
 }
 
 const resetFilters = () => {
-  filterOptions.leagueTypes = []
+  filterOptions.leagueTypes = [...HOT_LEAGUES]
   filterOptions.matchStatus = []
   searchValue.keyword = ""
 }
@@ -348,10 +348,7 @@ const applyFilters = () => {
 }
 
 const isLeagueActive = (league: string) => {
-  if (filterOptions.leagueTypes.length > 0) {
-    return filterOptions.leagueTypes.includes(league)
-  }
-  return HOT_LEAGUES.includes(league)
+  return filterOptions.leagueTypes.includes(league)
 }
 
 const toggleQuickLeague = (league: string) => {
